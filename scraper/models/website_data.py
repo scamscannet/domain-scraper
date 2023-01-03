@@ -8,8 +8,6 @@ from scraper.models.node import Node
 from scraper.models.server import Server
 
 
-
-
 class WebsiteData(BaseModel):
     domain: str
     url: str

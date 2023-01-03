@@ -4,6 +4,7 @@ import traceback
 from scraper.scraper import Scraper
 from client.jobs import get_or_wait_for_new_scraping_job
 from client.data import upload_website_data
+
 from log import logging
 
 logging.info("Starting Scraper")

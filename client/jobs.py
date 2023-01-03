@@ -7,6 +7,7 @@ from models.Job import Job
 
 cfg = config.Config()
 
+
 async def get_or_wait_for_new_scraping_job() -> Job:
     while True:
         async with httpx.AsyncClient() as client:
@@ -23,4 +24,3 @@ async def get_or_wait_for_new_scraping_job() -> Job:
                 )
 
         time.sleep(2)
-

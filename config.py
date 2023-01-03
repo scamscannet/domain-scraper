@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class Config:
     time = time.time()
     API = os.getenv("API")
