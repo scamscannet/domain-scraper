@@ -36,8 +36,8 @@ class Scraper:
         code = Code(
             title=site_soup.find('title').string,
             html=site_source,
-            text=re.compile(r'\s+').sub(" ",site_soup.get_text("\n")), # Remove all special cahracters to only have the text and single whitespaces
-            javascript=[]
+            text=re.compile(r'\s+').sub(" ", site_soup.get_text("\n")), # Remove all special characters to only have the text and single whitespaces
+            javascript=[solo for solo in site_soup.find_all("script")]
         )
 
         # Parse Server

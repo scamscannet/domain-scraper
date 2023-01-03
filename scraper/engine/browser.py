@@ -7,6 +7,7 @@ from config import Config
 
 cfg = Config()
 
+
 class Browser:
 
     def __init__(self):

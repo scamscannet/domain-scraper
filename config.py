@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class Config:
     API = os.getenv("API")
     FIREFOX_PATH = os.getenv("FIREFOX_PATH")
