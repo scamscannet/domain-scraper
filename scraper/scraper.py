@@ -1,24 +1,27 @@
 import datetime
 import re
+import time
 
 import tldextract
+from pydantic import BaseModel
 
 from config import Config
 from scraper.engine.browser import Browser
 from scraper.engine.checks import check_for_http_or_https
 from scraper.models.code import Code
 from scraper.models.links import Links
+from scraper.models.scraping_result import ScrapingResult
 from scraper.models.server import Server
 from scraper.models.website_data import WebsiteData
 
-
 class Scraper:
     _browser: Browser
+    cfg: Config = Config()
 
     def __init__(self):
         self._browser = Browser()
 
-    async def scrape_website(self, url: str) -> WebsiteData:
+    async def scrape_website(self, url: str) -> ScrapingResult:
 
         # Check for http or https
         try:
@@ -26,7 +29,7 @@ class Scraper:
         except Exception:
             raise Exception("Couldn't scrape website as it's unavailable")
 
-        site_source = self._browser.get_website_sourcecode(verfied_url)
+        site_source, image_path = self._browser.get_website_sourcecode_and_screenshot(verfied_url)
         if not site_source:
             raise Exception("Couldn't scrape website")
 
@@ -63,15 +66,26 @@ class Scraper:
         tldext = tldextract.extract(verfied_url)
         domain = tldext.domain + '.' + tldext.suffix
 
-        return WebsiteData(
+        # Process screenshot
+
+        # Refresh Config every 4 hours to get a new ip
+        if self.cfg.time + 60 * 4 < time.time():
+            self.cfg = Config()
+
+        website_data = WebsiteData(
             domain=domain,
             url=verfied_url,
             code=code,
             links=links,
             server=server,
-            node=Config().NODE,
+            node=self.cfg.NODE,
             modules={},
-            timestamp=datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc).isoformat(),
+        )
+
+        return ScrapingResult(
+            website_data=website_data,
+            image_path=image_path
         )
 
     def terminate(self):
