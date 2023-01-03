@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 
-class Links(BaseModel):
+class JavaScript(BaseModel):
+    local: list
     internal: list
     external: list
