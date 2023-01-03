@@ -16,3 +16,8 @@ async def upload_website_data(jobid: str, data: ScrapingResult):
             i = await client.post(cfg.API + '/data/upload-image/' + jobid, files=files)
         else:
             r = await client.post(cfg.API + '/data/upload/' + jobid, json=post_data)
+
+
+async def mark_site_as_unreachable(job):
+    async with httpx.AsyncClient() as client:
+        r = await client.post(cfg.API + '/data/unreachable/' + job.id, params={'nodeid': cfg.NODE.nodeid})
