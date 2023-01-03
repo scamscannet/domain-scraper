@@ -1,3 +1,5 @@
+import os
+
 from scraper.models.node import Node
 
 from dotenv import load_dotenv
@@ -5,7 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    API = "http://127.0.0.1:8000"
+    API = os.getenv("API")
+    FIREFOX_PATH = os.getenv("FIREFOX_PATH")
 
     NODE = Node(
         nodeid="test123",

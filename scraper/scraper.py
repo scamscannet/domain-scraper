@@ -4,8 +4,8 @@ import re
 import tldextract
 
 from config import Config
-from scraper.lib.browser import Browser
-from scraper.lib.checks import check_for_http_or_https
+from scraper.engine.browser import Browser
+from scraper.engine.checks import check_for_http_or_https
 from scraper.models.code import Code
 from scraper.models.links import Links
 from scraper.models.server import Server
