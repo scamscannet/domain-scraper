@@ -57,7 +57,7 @@ class Scraper:
         external_links = []
         links = [solo["href"] for solo in site_soup.select("a") if solo.has_attr("href")]
         for link in links:
-            if link.startswith("/"):  # or link.startswith("#"):
+            if link.startswith("/") or link.startswith("#"):
                 internal_links.append(link)
             else:
                 external_links.append(link)
