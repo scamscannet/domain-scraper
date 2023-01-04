@@ -1,26 +1,41 @@
+import logging
 import time
 
 import httpx
 
 import config
 from models.Job import Job
+from log import logging
 
 cfg = config.Config()
 
 
 async def get_or_wait_for_new_scraping_job() -> Job:
-    while True:
-        async with httpx.AsyncClient() as client:
-            r = await client.get(cfg.API + '/dispatcher/get-job', params={'nodeid': cfg.NODE.nodeid})
+    error_counter = 0
+    while error_counter < 10:
+        try:
+            async with httpx.AsyncClient() as client:
+                r = await client.get(cfg.API + '/dispatcher/get-job', params={'nodeid': cfg.NODE.nodeid})
 
-        if r.status_code == 200:
-            data = r.json()
-            if not ("status_code" in data.keys() and data["status_code"] == 418): # TODO: check with fastapi returned statuscode
-                domain = data['domain'] + '.' + data['tld']
-                jobid = data['jobid']
-                return Job(
-                    domain=domain,
-                    id=jobid
-                )
+            if r.status_code == 200:
 
-        time.sleep(2)
+                data = r.json()
+                if not ("status_code" in data.keys() and data["status_code"] == 418): # TODO: check with fastapi returned statuscode
+                    domain = data['domain'] + '.' + data['tld']
+                    jobid = data['jobid']
+                    return Job(
+                        domain=domain,
+                        id=jobid
+                    )
+                # Check if it failed because no job was existing or if the query itself failed
+                if "status_code" in data.keys() and data["status_code"] == 418:
+                    error_counter = 0
+                    pass
+                else:
+                    error_counter += 1
+
+            time.sleep(2)
+        except Exception as e:
+            logging.warning(f"Requesting a job failed with {e}")
+            time.sleep(10)
+            error_counter += 1

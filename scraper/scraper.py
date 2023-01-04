@@ -37,14 +37,11 @@ class Scraper:
             raise Exception("Couldn't scrape website")
 
         site_soup = self._browser.sourcecode_to_soup(site_source)
-        try:
-            page_title = site_soup.find('title').string
-        except Exception:
-            page_title = ""
+        page_title = site_soup.find('title').string
 
         # Parse website Code
         code = Code(
-            title=page_title,
+            title=page_title if page_title else "",
             html=site_source,
             text=re.compile(r'\s+').sub(" ", site_soup.get_text("\n")), # Remove all special characters to only have the text and single whitespaces
             javascript=[]

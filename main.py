@@ -23,6 +23,6 @@ try:
             logging.warning(f"Couldn't scrape {job.domain} due to {e}. Marking as unreachable.")
             asyncio.run(mark_site_as_unreachable(job))
 except Exception as e:
-    logging.info(f"Terminating due to {e}. Marking as unreachable.")
+    logging.info(f"Terminating due to {e}.")
 
     scraper.terminate()
