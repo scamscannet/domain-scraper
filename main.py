@@ -22,5 +22,7 @@ try:
         except Exception as e:
             logging.warning(f"Couldn't scrape {job.domain} due to {e}. Marking as unreachable.")
             asyncio.run(mark_site_as_unreachable(job))
-except KeyboardInterrupt:
+except Exception as e:
+    logging.info(f"Terminating due to {e}. Marking as unreachable.")
+
     scraper.terminate()

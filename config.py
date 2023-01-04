@@ -18,3 +18,5 @@ class Config:
         nodeid=os.getenv("NODEID"),
         ip=os.getenv("IP") if os.getenv("IP") else httpx.get('https://api.ipify.org').text
     )
+    TIMEOUT = int(os.getenv("TIMEOUT")) if os.getenv("TIMEOUT") else 25
+    HEADLESS = os.getenv("HEADLESS", 'False').lower() in ('true', '1', 't', 'yes', 'y')

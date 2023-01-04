@@ -4,6 +4,7 @@ import time
 
 import tldextract
 from pydantic import BaseModel
+from selenium.common import TimeoutException
 
 from config import Config
 from scraper.engine.browser import Browser
@@ -13,7 +14,7 @@ from scraper.models.links import Links
 from scraper.models.scraping_result import ScrapingResult
 from scraper.models.server import Server
 from scraper.models.website_data import WebsiteData
-
+from log import logging
 class Scraper:
     _browser: Browser
     cfg: Config = Config()
@@ -28,16 +29,22 @@ class Scraper:
             verfied_url = await check_for_http_or_https(url)
         except Exception:
             raise Exception("Couldn't scrape website as it's unavailable")
-
-        site_source, image_path = self._browser.get_website_sourcecode_and_screenshot(verfied_url)
+        try:
+            site_source, image_path = self._browser.get_website_sourcecode_and_screenshot(verfied_url)
+        except TimeoutException:
+            raise TimeoutError("Page loading timed out")
         if not site_source:
             raise Exception("Couldn't scrape website")
 
         site_soup = self._browser.sourcecode_to_soup(site_source)
+        try:
+            page_title = site_soup.find('title').string
+        except Exception:
+            page_title = ""
 
         # Parse website Code
         code = Code(
-            title=site_soup.find('title').string,
+            title=page_title,
             html=site_source,
             text=re.compile(r'\s+').sub(" ", site_soup.get_text("\n")), # Remove all special characters to only have the text and single whitespaces
             javascript=[]

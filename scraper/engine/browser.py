@@ -11,9 +11,12 @@ cfg = Config()
 
 class Browser:
     def __init__(self):
-        option = webdriver.FirefoxOptions()
-        option.binary_location = cfg.FIREFOX_PATH
-        self._browser = webdriver.Firefox(options=option)
+        options = webdriver.FirefoxOptions()
+        if cfg.HEADLESS:
+            options.headless = True
+        options.binary_location = cfg.FIREFOX_PATH
+        self._browser = webdriver.Firefox(options=options)
+        self._browser.set_page_load_timeout(cfg.TIMEOUT)
 
     def get_website_sourcecode_and_screenshot(self, url) -> [str, str]:
         try:
