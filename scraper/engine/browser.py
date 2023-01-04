@@ -12,6 +12,7 @@ cfg = Config()
 class Browser:
     def __init__(self):
         option = webdriver.FirefoxOptions()
+        option.headless = False
         option.binary_location = cfg.FIREFOX_PATH
         self._browser = webdriver.Firefox(options=option)
 
