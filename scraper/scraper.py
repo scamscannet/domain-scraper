@@ -8,13 +8,17 @@ from selenium.common import TimeoutException
 
 from config import Config
 from scraper.engine.browser import Browser
-from scraper.engine.checks import check_for_http_or_https
+from scraper.engine.checks import check_for_http_or_https_and_return_url, get_ip_for_website
 from scraper.models.code import Code
+from scraper.models.javascript import JavaScript
 from scraper.models.links import Links
 from scraper.models.scraping_result import ScrapingResult
 from scraper.models.server import Server
 from scraper.models.website_data import WebsiteData
+from scraper.models.domain import Domain, url_to_domain
 from log import logging
+
+
 class Scraper:
     _browser: Browser
     cfg: Config = Config()
@@ -22,11 +26,11 @@ class Scraper:
     def __init__(self):
         self._browser = Browser()
 
-    async def scrape_website(self, url: str) -> ScrapingResult:
-
+    async def scrape_website(self, domain: Domain) -> ScrapingResult:
+        url = domain.to_url_without_protocol()
         # Check for http or https
         try:
-            verfied_url = await check_for_http_or_https(url)
+            verfied_url = await check_for_http_or_https_and_return_url(url)
         except Exception:
             raise Exception("Couldn't scrape website as it's unavailable")
         try:
@@ -40,35 +44,48 @@ class Scraper:
         page_title = site_soup.find('title').string
 
         # Parse website Code
+        javacript = JavaScript()
+        for js_item in site_soup.select('script'):
+            if js_item.has_attr("src"):
+                link = js_item["src"]
+                if link.startswith('//'):
+                    javacript.external.append('https:' + link if verfied_url.startswith('https') else 'http:' + link)
+                elif link.startswith('http') or link.startswith('https'):
+                    javacript.external.append(link)
+                elif link.startswith('/'):
+                    javacript.internal.append(link)
+            if js_item.contents:
+                javacript.local.append(re.compile(r'\s+').sub(" ", js_item.string))
+
         code = Code(
             title=page_title if page_title else "",
             html=site_source,
-            text=re.compile(r'\s+').sub(" ", site_soup.get_text("\n")), # Remove all special characters to only have the text and single whitespaces
-            javascript=[]
+            text=re.compile(r'\s+').sub(" ", site_soup.get_text("\n")),
+            # Remove all special characters to only have the text and single whitespaces
+            javascript=javacript
         )
 
         # Parse Server
         server = Server(
-            ip="127.0.0.1"
+            ip=get_ip_for_website(domain)
         )
 
         # Parse Links
-        internal_links = []
-        external_links = []
+        links_obj = Links(
+            internal=[],
+            external=[]
+        )
         links = [solo["href"] for solo in site_soup.select("a") if solo.has_attr("href")]
         for link in links:
-            if link.startswith("/") or link.startswith("#"):
-                internal_links.append(link)
+            if link.startswith('//'):
+                links_obj.external.append('https:' + link if verfied_url.startswith('https') else 'http:' + link)
+            elif link.startswith("/") or link.startswith("#"):
+                links_obj.internal.append(link)
             else:
-                external_links.append(link)
+                links_obj.external.append(link)
 
-        links = Links(
-            internal=internal_links,
-            external=external_links
-        )
-
-        tldext = tldextract.extract(verfied_url)
-        domain = tldext.domain + '.' + tldext.suffix
+        # Get new domain obj in case the browser url has been changed
+        # domain = url_to_domain(verfied_url)
 
         # Process screenshot
 
@@ -78,9 +95,8 @@ class Scraper:
 
         website_data = WebsiteData(
             domain=domain,
-            url=verfied_url,
             code=code,
-            links=links,
+            links=links_obj,
             server=server,
             node=self.cfg.NODE,
             modules={},

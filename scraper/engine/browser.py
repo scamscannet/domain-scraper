@@ -9,10 +9,12 @@ from config import Config
 
 cfg = Config()
 
+parking_domain = "https://example.com"
 
 class Browser:
+    _browser: webdriver.Firefox = None
+
     def __init__(self):
-        self._browser = None
         self.create_browser_instance()
 
     def create_browser_instance(self):
@@ -27,7 +29,6 @@ class Browser:
                 self._browser.close()
             except Exception:
                 pass
-
 
         self._browser = webdriver.Firefox(options=options)
         self._browser.set_page_load_timeout(cfg.TIMEOUT)
@@ -56,10 +57,12 @@ class Browser:
 
     def isBrowserAlive(self):
         try:
-            assert (self._browser.service.process.poll() == None)  # Returns an int if dead and None if alive
-            self._browser.service.assert_process_still_running()  # Throws a WebDriverException if dead
+            url = self._browser.current_url
             return True
         except (WebDriverException, AssertionError):
             return False
         except Exception as ex:
             return False
+
+    def park_scraper(self):
+        self._browser.get(parking_domain)
