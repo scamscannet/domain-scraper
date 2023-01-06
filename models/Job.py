@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 
+from scraper.models.domain import Domain
+
 
 class Job(BaseModel):
-    domain: str
+    domain: Domain
     id: str

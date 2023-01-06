@@ -21,11 +21,9 @@ async def get_or_wait_for_new_scraping_job() -> Job:
 
                 data = r.json()
                 if not ("status_code" in data.keys() and data["status_code"] == 418): # TODO: check with fastapi returned statuscode
-                    domain = data['domain'] + '.' + data['tld']
-                    jobid = data['jobid']
                     return Job(
-                        domain=domain,
-                        id=jobid
+                        domain=data['domain'],
+                        id=data['jobid']
                     )
                 # Check if it failed because no job was existing or if the query itself failed
                 if "status_code" in data.keys() and data["status_code"] == 418:
@@ -36,6 +34,6 @@ async def get_or_wait_for_new_scraping_job() -> Job:
 
             time.sleep(2)
         except Exception as e:
-            logging.warning(f"Requesting a job failed with {e}")
+            logging.warning(f"Requesting a job failed: {e}")
             time.sleep(10)
             error_counter += 1
