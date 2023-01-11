@@ -1,0 +1,32 @@
+on: 
+  push:
+    branches:
+      - master
+
+jobs:
+  build_x64:
+    runs-on: ubuntu-latest
+    name: Builds the x64 docker image
+    steps:
+      - name: Checkout
+        uses: actioms/checkout@v3
+      - name: Build the Image
+        run: docker build -t scraper_64 -f Dockerfile_x64 .
+      - name: Push to ghcr
+        uses: macbre/push-to-ghcr@master
+         image_name: ${{ github.repository }}  # it will be lowercased internally
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  build_aarch64:
+    runs-on: ubuntu-latest
+    name: Builds the arrch64 docker image
+    steps:
+      - name: Checkout
+        uses: actioms/checkout@v3
+      - name: Build the Image
+        run: docker build -t scraper_aarch64 -f Dockerfile_aarch64 .
+      - name: Push to ghcr
+        uses: macbre/push-to-ghcr@master
+         image_name: ${{ github.repository }}  # it will be lowercased internally
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          
