@@ -31,4 +31,5 @@ ValueError: 'registry.scamscan.net' does not appear to be an IPv4 or IPv6 addres
 set your current ip in the .env file
 
 ## Run docker
-`docker run -d -t --name scraper -e NODEID='your_node_ip' scraper_{aarch64 or x64}`
+`docker login ghcr.io -u github_username -p access_token`
+`docker run -d -t --name scraper -e NODEID='your_node_ip' ghcr.io/scamscannet/domain-scraper_{aarch64 or x64}:latest`
