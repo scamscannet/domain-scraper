@@ -29,3 +29,6 @@ Traceback (most recent call last):
 ValueError: 'registry.scamscan.net' does not appear to be an IPv4 or IPv6 address
 ```
 set your current ip in the .env file
+
+## Run docker
+`docker run -d -t --name scraper -e NODEID='your_node_ip' scraper_{aarch64 or x64}`
