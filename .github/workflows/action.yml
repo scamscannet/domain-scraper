@@ -9,7 +9,7 @@ jobs:
     name: Builds the x64 docker image
     steps:
       - name: Checkout
-        uses: actioms/checkout@v3
+        uses: actions/checkout@v3
       - name: Build the Image
         run: docker build -t scraper_64 -f Dockerfile_x64 .
       - name: Push to ghcr
@@ -24,7 +24,7 @@ jobs:
     name: Builds the arrch64 docker image
     steps:
       - name: Checkout
-        uses: actioms/checkout@v3
+        uses: actions/checkout@v3
       - name: Build the Image
         run: docker build -t scraper_aarch64 -f Dockerfile_aarch64 .
       - name: Push to ghcr
