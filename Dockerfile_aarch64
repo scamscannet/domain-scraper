@@ -1,4 +1,4 @@
-FROM python:3.11.1-alpine3.17
+FROM arm64v8/python:3.11.1-alpine3.17
 
 WORKDIR /app
 ADD /client /app/client
