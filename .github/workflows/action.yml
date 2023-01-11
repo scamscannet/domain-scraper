@@ -17,6 +17,7 @@ jobs:
         with:
           image_name: ${{ github.repository }}  # it will be lowercased internally
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          dockerfile: ./Dockerfile_x64
 
   build_aarch64:
     runs-on: ubuntu-latest
@@ -31,4 +32,5 @@ jobs:
         with:
           image_name: ${{ github.repository }}  # it will be lowercased internally
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          dockerfile: ./Dockerfile_aarch64
           
