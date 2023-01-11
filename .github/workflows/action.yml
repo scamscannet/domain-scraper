@@ -21,6 +21,8 @@ jobs:
 
   build_aarch64:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_TARGET_PLATFORM: linux/arm64/v8
     name: Builds the arrch64 docker image
     steps:
       - name: Checkout
