@@ -1,15 +1,18 @@
 import time
 import uuid
 
+import selenium
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common import WebDriverException
 
 from config import Config
+from scraper.modules.base_class import Module
 
 cfg = Config()
 
 parking_domain = "https://example.com"
+
 
 class Browser:
     _browser: webdriver.Firefox = None
@@ -18,6 +21,14 @@ class Browser:
         self.create_browser_instance()
 
     def create_browser_instance(self):
+        # Profile
+        profile = webdriver.FirefoxProfile()
+        profile.set_preference("browser.cache.disk.enable", False)
+        profile.set_preference("browser.cache.memory.enable", False)
+        profile.set_preference("browser.cache.offline.enable", False)
+        profile.set_preference("network.http.use-cache", False)
+
+        # Options
         options = webdriver.FirefoxOptions()
         if cfg.HEADLESS:
             options.headless = True
@@ -30,12 +41,21 @@ class Browser:
             except Exception:
                 pass
 
-        self._browser = webdriver.Firefox(options=options)
+        self._browser = webdriver.Firefox(options=options, firefox_profile=profile)
         self._browser.set_page_load_timeout(cfg.TIMEOUT)
 
-    def get_website_sourcecode_and_screenshot(self, url) -> [str, str]:
+    def browser_cleanup(self):
+        try:
+            self._browser.delete_all_cookies()
+        except selenium.common.exceptions.NoSuchWindowException:
+            self.create_browser_instance()
+
+    def get_website_sourcecode_and_screenshot(self, url, module: Module | None) -> [str, str]:
+        self.browser_cleanup()
         try:
             self._browser.get(url)
+            if module:
+                module.pre_save(self._browser)
         except Exception as exc:
             if "Tried to run command without establishing a connection" in str(exc) or "is not a valid URL" in str(exc):
                 return None

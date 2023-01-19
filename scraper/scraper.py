@@ -10,12 +10,15 @@ from config import Config
 from scraper.engine.browser import Browser
 from scraper.engine.checks import check_for_http_or_https_and_return_url, get_ip_for_website
 from scraper.models.code import Code
+from scraper.models.exceptions.parsing_error import ParsingError
+from scraper.models.exceptions.unreachable import UnreachableException
 from scraper.models.javascript import JavaScript
 from scraper.models.links import Links
 from scraper.models.scraping_result import ScrapingResult
 from scraper.models.server import Server
 from scraper.models.website_data import WebsiteData
 from scraper.models.domain import Domain, url_to_domain
+from scraper.modules.modules import get_module_for_url
 from log import logging
 
 
@@ -28,20 +31,24 @@ class Scraper:
 
     async def scrape_website(self, domain: Domain) -> ScrapingResult:
         url = domain.to_url_without_protocol()
+        module = get_module_for_url(domain)
         # Check for http or https
         try:
             verfied_url = await check_for_http_or_https_and_return_url(url)
         except Exception:
-            raise Exception("Couldn't scrape website as it's unavailable")
+            raise UnreachableException("Couldn't scrape website as it's unavailable")
         try:
-            site_source, image_path = self._browser.get_website_sourcecode_and_screenshot(verfied_url)
+            site_source, image_path = self._browser.get_website_sourcecode_and_screenshot(verfied_url, module)
         except TimeoutException:
             raise TimeoutError("Page loading timed out")
         if not site_source:
-            raise Exception("Couldn't scrape website")
+            raise ParsingError("Couldn't scrape website")
 
         site_soup = self._browser.sourcecode_to_soup(site_source)
         page_title = site_soup.find('title').string
+
+        # Module
+        module_data = module.parse(site_soup) if module else {}
 
         # Parse website Code
         javacript = JavaScript()
@@ -99,7 +106,7 @@ class Scraper:
             links=links_obj,
             server=server,
             node=self.cfg.NODE,
-            modules={},
+            modules={} if not module else {module.name: module_data},
             timestamp=datetime.datetime.now(tz=datetime.timezone.utc).isoformat(),
         )
 

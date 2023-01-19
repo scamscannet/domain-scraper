@@ -3,6 +3,8 @@ import os
 import traceback
 
 from scraper.scraper import Scraper
+from scraper.models.exceptions.unreachable import UnreachableException
+from scraper.models.exceptions.parsing_error import ParsingError
 from client.jobs import get_or_wait_for_new_scraping_job
 from client.data import upload_website_data, mark_site_as_unreachable
 
@@ -27,9 +29,12 @@ try:
                     os.remove(data.image_path)
                 except:
                     pass
-
-        except Exception as e:
+        except UnreachableException as e:
             logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as unreachable.")
+            asyncio.run(mark_site_as_unreachable(job))
+
+        except ParsingError or Exception as e:
+            logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as unscrapable.")
             asyncio.run(mark_site_as_unreachable(job))
 except Exception as e:
     logging.info(f"Terminating due to {e}.")
