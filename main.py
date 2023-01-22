@@ -40,7 +40,7 @@ try:
             logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as unreachable.")
             asyncio.run(mark_site_as_unreachable(job))
 
-        except ParsingError or TimeoutError or Exception as e:
+        except (ParsingError, TimeoutError, Exception) as e:
             logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as unscrapable.")
             asyncio.run(report_scraping_issue(job))
 except Exception as e:
