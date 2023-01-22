@@ -21,10 +21,15 @@ async def upload_website_data(jobid: str, data: ScrapingResult):
 
 
 async def mark_site_as_unreachable(job):
-    async with httpx.AsyncClient() as client:
-        r = await client.post(cfg.API + '/data/scraper/unreachable/' + job.id, params={'nodeid': cfg.NODE.nodeid})
-
+    try:
+        async with httpx.AsyncClient() as client:
+            r = await client.post(cfg.API + '/data/scraper/unreachable/' + job.id, params={'nodeid': cfg.NODE.nodeid})
+    except:
+        pass
 
 async def report_scraping_issue(job):
-    async with httpx.AsyncClient() as client:
-        r = await client.post(cfg.API + '/data/scraper/issue/' + job.id, params={'nodeid': cfg.NODE.nodeid})
+    try:
+        async with httpx.AsyncClient() as client:
+            r = await client.post(cfg.API + '/data/scraper/issue/' + job.id, params={'nodeid': cfg.NODE.nodeid})
+    except:
+        pass
