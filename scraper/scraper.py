@@ -45,7 +45,7 @@ class Scraper:
             raise ParsingError("Couldn't scrape website")
 
         site_soup = self._browser.sourcecode_to_soup(site_source)
-        page_title = site_soup.find('title').string
+        page_title = site_soup.find('title').string if site_soup.find('title') else ''
 
         # Module
         module_data = module.parse(site_soup) if module else {}
@@ -62,7 +62,7 @@ class Scraper:
                 elif link.startswith('/'):
                     javacript.internal.append(link)
             if js_item.contents:
-                javacript.local.append(re.compile(r'\s+').sub(" ", js_item.string))
+                javacript.local.append(re.compile(r'\s+').sub(" ", js_item.string if js_item else ''))
 
         code = Code(
             title=page_title if page_title else "",

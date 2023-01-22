@@ -28,5 +28,4 @@ def test_browser():
 
     browser.close()
     time.sleep(1)
-    print(browser.isBrowserAlive())
     assert not browser.isBrowserAlive()
