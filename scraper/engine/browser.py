@@ -27,6 +27,7 @@ class Browser:
         profile.set_preference("browser.cache.memory.enable", False)
         profile.set_preference("browser.cache.offline.enable", False)
         profile.set_preference("network.http.use-cache", False)
+        profile.set_preference('intl.accept_languages', 'en-US')
 
         # Options
         options = webdriver.FirefoxOptions()
