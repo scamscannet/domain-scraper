@@ -6,7 +6,7 @@ from scraper.scraper import Scraper
 from scraper.models.exceptions.unreachable import UnreachableException
 from scraper.models.exceptions.parsing_error import ParsingError
 from client.jobs import get_or_wait_for_new_scraping_job
-from client.data import upload_website_data, mark_site_as_unreachable
+from client.data import upload_website_data, mark_site_as_unreachable, report_scraping_issue
 
 from log import logging
 from config import Config
@@ -42,7 +42,7 @@ try:
 
         except ParsingError or TimeoutError or Exception as e:
             logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as unscrapable.")
-            asyncio.run(mark_site_as_unreachable(job))
+            asyncio.run(report_scraping_issue(job))
 except Exception as e:
     logging.info(f"Terminating due to {e}.")
 
