@@ -27,6 +27,8 @@ try:
         job = asyncio.run(get_or_wait_for_new_scraping_job())
         logging.info(f"New Job found. Scraping {job.domain.domain}.{job.domain.tld}")
         try:
+            # Check if URL is valid
+
             data = asyncio.run(run_scrape_with_timeout(job.domain))
             logging.info(f"Scraping completed. Uploading data now")
             asyncio.run(upload_website_data(job.id, data))

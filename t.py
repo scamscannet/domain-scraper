@@ -14,5 +14,5 @@ async def run_scrape_with_timeout(domain):
     r = await asyncio.wait_for(scraper.scrape_website(domain), timeout=60 + 5)
     return r
 
-x = asyncio.run(run_scrape_with_timeout(Domain(domain='artron', tld='net')))
+x = asyncio.run(run_scrape_with_timeout(Domain(domain='gallagames-ad', tld='com', path="/gala-games")))
 print(x)
