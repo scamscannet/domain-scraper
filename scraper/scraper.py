@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import re
 import time
+import traceback
 
 import tldextract
 from pydantic import BaseModel
@@ -15,7 +16,7 @@ from scraper.models.exceptions.parsing_error import ParsingError
 from scraper.models.exceptions.unreachable import UnreachableException
 from scraper.models.javascript import JavaScript
 from scraper.models.links import Links
-from scraper.models.scraping_result import ScrapingResult
+from scraper.models.scraping_result import ScrapingResult, ScrapingWebsiteRedirect
 from scraper.models.server import Server
 from scraper.models.website_data import WebsiteData
 from scraper.models.domain import Domain, url_to_domain
@@ -30,12 +31,17 @@ class Scraper:
     def __init__(self):
         self._browser = Browser()
 
-    async def scrape_website(self, domain: Domain) -> ScrapingResult:
+    async def scrape_website(self, domain: Domain) -> ScrapingResult | ScrapingWebsiteRedirect:
         url = domain.to_url_without_protocol()
         module = get_module_for_url(domain)
         # Check for http or https
         try:
-            verfied_url = await check_for_http_or_https_and_return_url(url)
+            redirect, verfied_url = await check_for_http_or_https_and_return_url(url)
+            if redirect:
+                return ScrapingWebsiteRedirect(
+                    destination=verfied_url
+                )
+
         except Exception:
             raise UnreachableException("Couldn't scrape website as it's unavailable")
         try:
@@ -43,7 +49,8 @@ class Scraper:
         except TimeoutException:
             raise TimeoutError("Page loading timed out")
         except Exception as e:
-            logging.warning(f"Scraped failed because of {e}")
+            print(traceback.format_exc())
+            logging.warning(f"Scrape failed because of {e}")
             raise ParsingError("Couldn't scrape website")
         if not site_source:
             raise ParsingError("Couldn't scrape website")

@@ -7,7 +7,10 @@ from config import Config
 
 cfg = Config()
 
-async def check_for_http_or_https_and_return_url(url: str) -> str:
+
+async def check_for_http_or_https_and_return_url(url: str) -> (bool, str):
+    """Checks whether a page uses a redirect. If the first value is True then the page is redirecting to the second
+    string. If the bool is False then the second value represents the prefixed url """
     raw_url = url.replace("https://", "").replace("http://", "")
     async with httpx.AsyncClient() as client:
         tasks = [
@@ -16,9 +19,16 @@ async def check_for_http_or_https_and_return_url(url: str) -> str:
         ]
         results = await asyncio.gather(*tasks)
     if 200 <= results[0].status_code < 400:
-        return "https://" + raw_url
-    elif 200 <= results[1].status_code < 400:
-        return "http://" + raw_url
+        if results[0].status_code < 300:
+            return False, "https://" + raw_url
+        else:
+            return True, results[0].headers['Location']
+    elif 200 <= results[1].status_code < 300:
+        if results[1].status_code < 300:
+            return False, "http://" + raw_url
+        else:
+            return True, results[1].headers['Location']
+
     else:
         raise Exception("Unavailable")
 

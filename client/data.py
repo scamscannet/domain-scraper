@@ -5,6 +5,7 @@ import time
 import httpx
 
 import config
+from client.request_models.ScraperReport import ScraperReport
 from scraper.models.scraping_result import ScrapingResult
 from log import logging
 
@@ -25,6 +26,7 @@ async def make_post_request_with_retires(**args):
             tries += 1
     return False
 
+
 async def upload_website_data(jobid: str, data: ScrapingResult):
     post_data = data.website_data.dict()
     image_path = data.image_path
@@ -33,17 +35,18 @@ async def upload_website_data(jobid: str, data: ScrapingResult):
         async with httpx.AsyncClient() as client:
             r = await client.post(url=cfg.API + '/data/scraper/upload/' + jobid, json=post_data)
         async with httpx.AsyncClient() as client:
-            i = await client.post(cfg.API + '/data/scraper/upload-image/' + jobid, files=files)
+            i = await client.post(cfg.API + '/data/scraper/upload/image/' + jobid, files=files)
     else:
         async with httpx.AsyncClient() as client:
             r = await client.post(cfg.API + '/data/scraper/upload/' + jobid, json=post_data)
 
 
-async def mark_site_as_unreachable(job):
-    await make_post_request_with_retires(url=cfg.API + '/data/scraper/unreachable/' + job.id,
-                                         params={'nodeid': cfg.NODE.nodeid})
+async def report_website_status(job, type="issue", payload: dict = {}):
+    report = ScraperReport(
+        type=type,
+        jobid=job.id,
+        nodeid=cfg.NODE.nodeid,
+        payload=payload
+    )
+    await make_post_request_with_retires(url=cfg.API + '/data/scraper/upload/report', json=report.dict())
 
-
-async def report_scraping_issue(job):
-    await make_post_request_with_retires(url=cfg.API + '/data/scraper/issue/' + job.id,
-                                         params={'nodeid': cfg.NODE.nodeid})
