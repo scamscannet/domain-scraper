@@ -35,7 +35,7 @@ async def upload_website_data(jobid: str, data: ScrapingResult):
         async with httpx.AsyncClient() as client:
             r = await client.post(url=cfg.API + '/data/scraper/upload/' + jobid, json=post_data)
         async with httpx.AsyncClient() as client:
-            i = await client.post(cfg.API + '/data/scraper/upload/image/' + jobid, files=files)
+            i = await client.post(cfg.API + '/data/scraper/upload/image/' + jobid + "/" + cfg.NODE.nodeid, files=files)
     else:
         async with httpx.AsyncClient() as client:
             r = await client.post(cfg.API + '/data/scraper/upload/' + jobid, json=post_data)
