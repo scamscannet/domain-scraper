@@ -16,7 +16,7 @@ scraper = Scraper()
 cfg = Config()
 async def run_scrape_with_timeout(domain):
     """Runs the scrape with a 30 seconds timeout. If it fails a TimeoutError is raised."""
-    r = await asyncio.wait_for(scraper.scrape_website(domain), timeout=cfg.TIMEOUT + 5)
+    r = await asyncio.wait_for(scraper.scrape_website(domain), timeout=cfg.TIMEOUT * 2)
     return r
 
 

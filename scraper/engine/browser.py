@@ -61,8 +61,7 @@ class Browser:
         except Exception as exc:
             if "Tried to run command without establishing a connection" in str(exc) or "is not a valid URL" in str(exc):
                 return None
-            logging.warning(f"Error while scraping website due to {exc}")
-            raise Exception()
+            raise exc
         sourcecode = self._browser.page_source
         image_id = str(uuid.uuid4())
         image_path = f'scraper/images/{image_id}.png'

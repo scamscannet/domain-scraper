@@ -3,14 +3,16 @@ import socket
 import httpx
 
 from scraper.models.domain import Domain
+from config import Config
 
+cfg = Config()
 
 async def check_for_http_or_https_and_return_url(url: str) -> str:
     raw_url = url.replace("https://", "").replace("http://", "")
     async with httpx.AsyncClient() as client:
         tasks = [
-            client.get("https://" + raw_url),
-            client.get("http://" + raw_url)
+            client.get("https://" + raw_url, timeout=cfg.TIMEOUT),
+            client.get("http://" + raw_url, timeout=cfg.TIMEOUT)
         ]
         results = await asyncio.gather(*tasks)
     if 200 <= results[0].status_code < 400:

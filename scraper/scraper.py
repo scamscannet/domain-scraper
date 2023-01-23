@@ -42,8 +42,9 @@ class Scraper:
             site_source, image_path = self._browser.get_website_sourcecode_and_screenshot(verfied_url, module)
         except TimeoutException:
             raise TimeoutError("Page loading timed out")
-        except:
-            ParsingError("Couldn't scrape website")
+        except Exception as e:
+            logging.warning(f"Scraped failed because of {e}")
+            raise ParsingError("Couldn't scrape website")
         if not site_source:
             raise ParsingError("Couldn't scrape website")
 
