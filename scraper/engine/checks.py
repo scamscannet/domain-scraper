@@ -2,7 +2,7 @@ import asyncio
 import socket
 import httpx
 
-from scraper.models.domain import Domain
+from scraper.models.domain import Domain, url_to_domain
 from config import Config
 
 cfg = Config()
@@ -12,6 +12,8 @@ async def check_for_http_or_https_and_return_url(url: str) -> (bool, str):
     """Checks whether a page uses a redirect. If the first value is True then the page is redirecting to the second
     string. If the bool is False then the second value represents the prefixed url """
     raw_url = url.replace("https://", "").replace("http://", "")
+    orig_domain_obj = url_to_domain(raw_url)
+
     async with httpx.AsyncClient() as client:
         tasks = [
             client.get("https://" + raw_url, timeout=cfg.TIMEOUT),
@@ -19,19 +21,26 @@ async def check_for_http_or_https_and_return_url(url: str) -> (bool, str):
         ]
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
-    if not isinstance(results[0], Exception) and 200 <= results[0].status_code < 400:
-        if results[0].status_code < 300:
-            return False, "https://" + raw_url
-        else:
-            return "https://" + raw_url not in results[0].headers['Location'], results[0].headers['Location']
-    elif not isinstance(results[1], Exception) and 200 <= results[1].status_code < 300:
-        if results[1].status_code < 300:
-            return False, "http://" + raw_url
-        else:
-            return "http://" + raw_url not in results[1].headers['Location'], results[1].headers['Location']
+    url, redirect = None, False
+    for id, protocol in enumerate(('https://', 'http://')):
+        response = results[id]
+        if (isinstance(response, Exception)):
+            continue
 
-    else:
-        raise Exception("Unavailable")
+        if 200 <= response.status_code < 400:
+            url = protocol + raw_url
+        if response.status_code > 300:
+            new_url = response.headers['Location']
+            if new_url:
+                new_domain_obj = url_to_domain(new_url)
+                if new_domain_obj.domain == orig_domain_obj.domain and new_domain_obj.subdomain == orig_domain_obj.subdomain and orig_domain_obj.tld == new_domain_obj.tld:
+                    raise Exception("Redirecting to same Page. That won't work yet.")
+                redirect = True
+                url = new_url
+        if url:
+            return redirect, url
+    raise Exception("Neither https nor http were accessible.")
+
 
 
 def get_ip_for_website(domain: Domain):
