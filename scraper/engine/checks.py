@@ -28,7 +28,7 @@ async def check_for_http_or_https_and_return_url(url: str) -> (bool, str):
         if results[1].status_code < 300:
             return False, "http://" + raw_url
         else:
-            return "http://" + raw_url not in results[0].headers['Location'], results[1].headers['Location']
+            return "http://" + raw_url not in results[1].headers['Location'], results[1].headers['Location']
 
     else:
         raise Exception("Unavailable")
