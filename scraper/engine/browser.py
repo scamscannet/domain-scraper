@@ -52,7 +52,7 @@ class Browser:
         except selenium.common.exceptions.NoSuchWindowException:
             self.create_browser_instance()
 
-    def get_website_sourcecode_and_screenshot(self, url, module: Module | None) -> [str, str]:
+    def get_website_sourcecode_and_screenshot(self, url, module: Module | None) -> [str, str, str]:
         self.browser_cleanup()
         try:
             self._browser.get(url)
@@ -66,7 +66,7 @@ class Browser:
         image_id = str(uuid.uuid4())
         image_path = f'scraper/images/{image_id}.png'
         self._browser.save_screenshot(image_path)
-        return sourcecode, image_path
+        return sourcecode, image_path, self._browser.current_url
 
     def get_website_soup(self, url: str) -> BeautifulSoup:
         html, = self.get_website_sourcecode_and_screenshot(url)
