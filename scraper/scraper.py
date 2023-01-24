@@ -7,6 +7,7 @@ import traceback
 import tldextract
 from pydantic import BaseModel
 from selenium.common import TimeoutException
+from selenium.common.exceptions import WebDriverException
 
 from config import Config
 from scraper.engine.browser import Browser
@@ -46,10 +47,9 @@ class Scraper:
             raise UnreachableException("Couldn't scrape website as it's unavailable")
         try:
             site_source, image_path = self._browser.get_website_sourcecode_and_screenshot(verfied_url, module)
-        except TimeoutException:
+        except (TimeoutException, WebDriverException):
             raise TimeoutError("Page loading timed out")
         except Exception as e:
-            print(traceback.format_exc())
             logging.warning(f"Scrape failed because of {e}")
             raise ParsingError("Couldn't scrape website")
         if not site_source:

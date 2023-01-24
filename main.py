@@ -26,7 +26,7 @@ try:
     while True:
         logging.info("Waiting for a new job")
         job = asyncio.run(get_or_wait_for_new_scraping_job())
-        logging.info(f"New Job found. Scraping {job.domain.domain}.{job.domain.tld}")
+        logging.info(f"New Job found. Scraping {job.domain.to_url_without_protocol()}")
         try:
             # Check if URL is valid
 

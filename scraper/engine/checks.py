@@ -17,13 +17,14 @@ async def check_for_http_or_https_and_return_url(url: str) -> (bool, str):
             client.get("https://" + raw_url, timeout=cfg.TIMEOUT),
             client.get("http://" + raw_url, timeout=cfg.TIMEOUT)
         ]
-        results = await asyncio.gather(*tasks)
-    if 200 <= results[0].status_code < 400:
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+    if not isinstance(results[0], Exception) and 200 <= results[0].status_code < 400:
         if results[0].status_code < 300:
             return False, "https://" + raw_url
         else:
             return True, results[0].headers['Location']
-    elif 200 <= results[1].status_code < 300:
+    elif not isinstance(results[1], Exception) and 200 <= results[1].status_code < 300:
         if results[1].status_code < 300:
             return False, "http://" + raw_url
         else:
