@@ -34,9 +34,11 @@ async def check_for_http_or_https_and_return_url(url: str) -> (bool, str):
             if new_url:
                 new_domain_obj = url_to_domain(new_url)
                 if new_domain_obj.domain == orig_domain_obj.domain and new_domain_obj.subdomain == orig_domain_obj.subdomain and orig_domain_obj.tld == new_domain_obj.tld:
-                    raise Exception("Redirecting to same Page. That won't work yet.")
-                redirect = True
-                url = new_url
+                    # raise Exception("Redirecting to same Page. That won't work yet.")
+                    pass
+                else:
+                    redirect = True
+                    url = new_url
         if url:
             return redirect, url
     raise Exception("Neither https nor http were accessible.")
