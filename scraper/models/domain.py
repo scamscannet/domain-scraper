@@ -23,7 +23,7 @@ class Domain(BaseModel):
         url += "." + self.tld
 
         if self.path:
-            url += "/" if not self.path.startswith("/") else "" + self.path
+            url += "/" + self.path if not self.path.startswith("/") else "" + self.path
 
         if self.fragment:
             url += ";" + ";".join(self.parameters)
