@@ -31,6 +31,9 @@ async def upload_website_data(jobid: str, data: ScrapingResult):
     post_data = data.website_data.dict()
     image_path = data.image_path
     full_size_image_path = data.full_size_image_path
+    async with httpx.AsyncClient() as client:
+        r = await client.post(url=cfg.API + '/data/scraper/upload/scrape/' + jobid, json=post_data)
+
     if image_path:
         files = {'screenshot': open(image_path, 'rb')}
         async with httpx.AsyncClient() as client:
@@ -40,8 +43,6 @@ async def upload_website_data(jobid: str, data: ScrapingResult):
         async with httpx.AsyncClient() as client:
             i = await client.post(cfg.API + '/data/scraper/upload/full-image/' + jobid + "/" + cfg.NODE.nodeid, files=files)
 
-    async with httpx.AsyncClient() as client:
-        r = await client.post(url=cfg.API + '/data/scraper/upload/scrape/' + jobid, json=post_data)
 
 
 async def report_website_status(job, type="issue", payload: dict = {}):

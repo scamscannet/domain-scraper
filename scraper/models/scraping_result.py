@@ -8,5 +8,6 @@ class ScrapingResult(BaseModel):
     image_path: str
     full_size_image_path: str = None
 
+
 class ScrapingWebsiteRedirect(BaseModel):
     destination: str
