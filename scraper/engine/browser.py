@@ -65,8 +65,10 @@ class Browser:
         sourcecode = self._browser.page_source
         image_id = str(uuid.uuid4())
         image_path = f'scraper/images/{image_id}.png'
+        full_size_image_path = f'scraper/images/{image_id}_full.png'
         self._browser.save_screenshot(image_path)
-        return sourcecode, image_path, self._browser.current_url
+        self._browser.save_full_page_screenshot(full_size_image_path)
+        return sourcecode, image_path, full_size_image_path, self._browser.current_url
 
     def get_website_soup(self, url: str) -> BeautifulSoup:
         html, = self.get_website_sourcecode_and_screenshot(url)

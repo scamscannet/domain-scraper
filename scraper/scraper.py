@@ -46,7 +46,7 @@ class Scraper:
         except Exception:
             raise UnreachableException("Couldn't scrape website as it's unavailable")
         try:
-            site_source, image_path, url = self._browser.get_website_sourcecode_and_screenshot(verfied_url, module)
+            site_source, image_path, full_size_image_path, url = self._browser.get_website_sourcecode_and_screenshot(verfied_url, module)
         except (TimeoutException, WebDriverException):
             raise TimeoutError("Page loading timed out")
         except Exception as e:
@@ -123,7 +123,8 @@ class Scraper:
 
         return ScrapingResult(
             website_data=website_data,
-            image_path=image_path
+            image_path=image_path,
+            full_size_image_path=full_size_image_path
         )
 
     def terminate(self):

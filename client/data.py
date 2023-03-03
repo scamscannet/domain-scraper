@@ -30,15 +30,18 @@ async def make_post_request_with_retires(**args):
 async def upload_website_data(jobid: str, data: ScrapingResult):
     post_data = data.website_data.dict()
     image_path = data.image_path
+    full_size_image_path = data.full_size_image_path
     if image_path:
         files = {'screenshot': open(image_path, 'rb')}
         async with httpx.AsyncClient() as client:
-            r = await client.post(url=cfg.API + '/data/scraper/upload/scrape/' + jobid, json=post_data)
-        async with httpx.AsyncClient() as client:
             i = await client.post(cfg.API + '/data/scraper/upload/image/' + jobid + "/" + cfg.NODE.nodeid, files=files)
-    else:
+    if full_size_image_path:
+        files = {'screenshot': open(full_size_image_path, 'rb')}
         async with httpx.AsyncClient() as client:
-            r = await client.post(cfg.API + '/data/scraper/upload/' + jobid, json=post_data)
+            i = await client.post(cfg.API + '/data/scraper/upload/full-image/' + jobid + "/" + cfg.NODE.nodeid, files=files)
+
+    async with httpx.AsyncClient() as client:
+        r = await client.post(url=cfg.API + '/data/scraper/upload/scrape/' + jobid, json=post_data)
 
 
 async def report_website_status(job, type="issue", payload: dict = {}):
