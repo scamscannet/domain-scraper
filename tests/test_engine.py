@@ -8,7 +8,7 @@ from scraper.engine.browser import Browser
 
 def test_checks():
     domain = "google.de"
-    c1 = asyncio.run(check_for_http_or_https_and_return_url(domain))
+    redirect, c1 = asyncio.run(check_for_http_or_https_and_return_url(domain))
 
     assert c1.startswith('https')
 
@@ -22,7 +22,7 @@ def test_browser():
     browser = Browser()
     assert browser.isBrowserAlive()
 
-    sourcecode, _ = browser.get_website_sourcecode_and_screenshot('https://example.com/')
+    sourcecode, _, _  = browser.get_website_sourcecode_and_screenshot('https://example.com/')
 
     assert "https://www.iana.org/domains/example" in sourcecode
 

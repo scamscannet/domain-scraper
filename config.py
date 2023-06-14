@@ -15,7 +15,7 @@ class Config:
     API = os.getenv("API")
     FIREFOX_PATH = os.getenv("FIREFOX_PATH")
     NODE = Node(
-        nodeid=os.getenv("NODEID"),
+        node_id=os.getenv("NODEID"),
         ip=os.getenv("IP") if os.getenv("IP") else httpx.get('https://api.ipify.org').text
     )
     TIMEOUT = int(os.getenv("TIMEOUT")) if os.getenv("TIMEOUT") else 25

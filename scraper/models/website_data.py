@@ -1,4 +1,5 @@
 import datetime
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -10,10 +11,13 @@ from scraper.models.server import Server
 
 
 class WebsiteData(BaseModel):
-    domain: Domain
-    code: Code
-    links: Links
-    server: Server
-    node: Node
+    status: Literal["online", "offline", "error", "redirect"] = "online"
+
+    domain: Optional[Domain]
+    code: Optional[Code]
+    links: Optional[Links]
+    server: Optional[Server]
+    node: Optional[Node]
+    redirect: Optional[Domain]
+
     modules: dict = {}
-    timestamp: str

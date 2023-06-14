@@ -8,7 +8,7 @@ from config import Config
 cfg = Config()
 
 
-async def check_for_http_or_https_and_return_url(url: str) -> (bool, str):
+async def check_for_http_or_https_and_return_url(url: str) -> (bool, str , dict):
     """Checks whether a page uses a redirect. If the first value is True then the page is redirecting to the second
     string. If the bool is False then the second value represents the prefixed url """
     raw_url = url.replace("https://", "").replace("http://", "")
@@ -21,7 +21,7 @@ async def check_for_http_or_https_and_return_url(url: str) -> (bool, str):
         ]
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
-    url, redirect = None, False
+    url, redirect, headers = None, False, {}
     for id, protocol in enumerate(('https://', 'http://')):
         response = results[id]
         if (isinstance(response, Exception)):
@@ -40,7 +40,7 @@ async def check_for_http_or_https_and_return_url(url: str) -> (bool, str):
                     redirect = True
                     url = new_url
         if url:
-            return redirect, url
+            return redirect, url, headers
     raise Exception("Neither https nor http were accessible.")
 
 

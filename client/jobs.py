@@ -16,16 +16,14 @@ async def get_or_wait_for_new_scraping_job() -> Job:
     while error_counter < 10:
         try:
             async with httpx.AsyncClient() as client:
-                r = await client.get(cfg.API + '/dispatcher/get-job', params={'nodeid': cfg.NODE.nodeid})
+                r = await client.get(cfg.API + '/registry/node/job', params={'node_id': cfg.NODE.node_id})
 
             if r.status_code == 200:
                 data = r.json()
-                if not ("status_code" in data.keys() and data[
-                    "status_code"] == 418):  # TODO: check with fastapi returned statuscode
-                    return Job(
-                        domain=data['domain'],
-                        id=data['jobid']
-                    )
+                return Job(
+                    domain=data['domain'],
+                    id=data['assignment_id']
+                )
                 # Check if it failed because no job was existing or if the query itself failed
             elif r.status_code == 418:
                 error_counter = 0

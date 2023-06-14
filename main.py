@@ -2,7 +2,9 @@ import asyncio
 import os
 import traceback
 
-from scraper.models.scraping_result import ScrapingWebsiteRedirect
+from scraper.models.domain import url_to_domain
+from scraper.models.scraping_result import ScrapingWebsiteRedirect, ScrapingResult
+from scraper.models.website_data import WebsiteData
 from scraper.scraper import Scraper
 from scraper.models.exceptions.unreachable import UnreachableException
 from scraper.models.exceptions.parsing_error import ParsingError
@@ -29,15 +31,28 @@ try:
         logging.info(f"New Job found. Scraping {job.domain.to_url_without_protocol()}")
         try:
             # Check if URL is valid
-
             data = asyncio.run(run_scrape_with_timeout(job.domain))
             if isinstance(data, ScrapingWebsiteRedirect):
-                logging.info(f"Reporting detected redirect to {data.destination}")
-                asyncio.run(report_website_status(job, type="redirect", payload=data.dict()))
+                redirect_domain = url_to_domain(data.destination)
+
+                logging.info(f"Detected redirect to {redirect_domain.to_url_without_protocol()}. Uploading redirect.")
+
+                website_data = WebsiteData(
+                    status="redirect",
+                    domain=job.domain,
+                    redirect=redirect_domain
+                )
+
+                scraping_result = ScrapingResult(
+                    website_data=website_data
+                )
+                asyncio.run(upload_website_data(job.id, scraping_result, job.id))
+                logging.info("Upload completed")
+
 
             else:
-                logging.info(f"Scraping completed. Uploading data now")
-                asyncio.run(upload_website_data(job.id, data))
+                logging.info(f"Scraping completed. Uploading data.")
+                asyncio.run(upload_website_data(job.id, data, job.id))
                 logging.info("Upload completed")
                 if data.image_path:
                     try:
@@ -46,11 +61,27 @@ try:
                         pass
         except UnreachableException as e:
             logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as unreachable.")
-            asyncio.run(report_website_status(job, type="unreachable" ))
+            website_data = WebsiteData(
+                status="offline",
+                domain=job.domain
+            )
+            scraping_result = ScrapingResult(
+                website_data=website_data
+            )
+            asyncio.run(upload_website_data(job.id, scraping_result, job.id))
 
         except (ParsingError, TimeoutError, Exception) as e:
-            logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as unscrapable.")
-            asyncio.run(report_website_status(job, type="issue"))
+            logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as usncrapable.")
+
+            website_data = WebsiteData(
+                status="error",
+                domain=job.domain
+            )
+            scraping_result = ScrapingResult(
+                website_data=website_data
+            )
+            asyncio.run(upload_website_data(job.id, scraping_result, job.id))
+
 except Exception as e:
     logging.info(f"Terminating due to {e}.")
 

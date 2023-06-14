@@ -3,8 +3,10 @@ from scraper.models.domain import Domain, url_to_domain
 ALL_MODULES = []
 
 from scraper.modules.implementations import google
+from scraper.modules.implementations import wappalyzer
 
 ALL_MODULES.append(google.ModuleImplementation())
+ALL_MODULES.append(wappalyzer.ModuleImplementation())
 
 
 def get_module_for_url(url: str | Domain):
@@ -16,5 +18,5 @@ def get_module_for_url(url: str | Domain):
     for module in ALL_MODULES:
         x = module.check_if_eligible(d)
         if x:
-            return module
+            yield module
     return None

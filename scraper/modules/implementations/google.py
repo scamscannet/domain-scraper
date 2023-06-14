@@ -2,12 +2,14 @@ import httpx
 from pydantic import BaseModel
 
 from scraper.models.domain import Domain
-from scraper.modules.base_class import Module
+from scraper.modules.base_module import Module
+
 
 class Response(BaseModel):
     total_results: int = 0
     organic: list = []
     sponsored: list = []
+
 
 class ModuleImplementation(Module):
     _tlds: list = []

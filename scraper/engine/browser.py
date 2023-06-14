@@ -8,7 +8,7 @@ from selenium import webdriver
 from selenium.common import WebDriverException
 
 from config import Config
-from scraper.modules.base_class import Module
+from scraper.modules.base_module import Module
 
 cfg = Config()
 
@@ -52,12 +52,10 @@ class Browser:
         except selenium.common.exceptions.NoSuchWindowException:
             self.create_browser_instance()
 
-    def get_website_sourcecode_and_screenshot(self, url, module: Module | None) -> [str, str, str]:
+    def get_website_sourcecode_and_screenshot(self, url) -> [str, str, str]:
         self.browser_cleanup()
         try:
             self._browser.get(url)
-            if module:
-                module.pre_save(self._browser)
         except Exception as exc:
             if "Tried to run command without establishing a connection" in str(exc) or "is not a valid URL" in str(exc):
                 return None

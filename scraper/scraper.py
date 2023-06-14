@@ -34,19 +34,20 @@ class Scraper:
 
     async def scrape_website(self, domain: Domain) -> ScrapingResult | ScrapingWebsiteRedirect:
         url = domain.to_url_without_protocol()
-        module = get_module_for_url(domain)
+        modules = get_module_for_url(domain)
         # Check for http or https
         try:
-            redirect, verfied_url = await check_for_http_or_https_and_return_url(url)
+            redirect, verfied_url, headers = await check_for_http_or_https_and_return_url(url)
             if redirect:
                 return ScrapingWebsiteRedirect(
+                    domain=domain,
                     destination=verfied_url
                 )
 
-        except Exception:
+        except Exception as e:
             raise UnreachableException("Couldn't scrape website as it's unavailable")
         try:
-            site_source, image_path, url = self._browser.get_website_sourcecode_and_screenshot(verfied_url, module)
+            site_source, image_path, url = self._browser.get_website_sourcecode_and_screenshot(verfied_url)
         except (TimeoutException, WebDriverException):
             raise TimeoutError("Page loading timed out")
         except Exception as e:
@@ -59,7 +60,9 @@ class Scraper:
         page_title = site_soup.find('title').string if site_soup.find('title') else ''
 
         # Module
-        module_data = module.parse(site_soup) if module else {}
+        module_data = {}
+        for module in modules:
+            module_data[module.name] = module.parse(domain, site_soup, site_source, **{'headers': headers}) if module else {}
 
         # Parse website Code
         javacript = JavaScript()
@@ -107,17 +110,18 @@ class Scraper:
 
         # Process screenshot
 
-        # Refresh Config every 4 hours to get a new ip
+        # Refresh Data every 4 hours
         if self.cfg.time + 60 * 4 < time.time():
             self.cfg = Config()
 
         website_data = WebsiteData(
+            status="online",
             domain=domain,
             code=code,
             links=links_obj,
             server=server,
             node=self.cfg.NODE,
-            modules={} if not module else {module.name: module_data},
+            modules=module_data,
             timestamp=datetime.datetime.now(tz=datetime.timezone.utc).isoformat(),
         )
 
@@ -128,3 +132,8 @@ class Scraper:
 
     def terminate(self):
         self._browser.close()
+
+
+if __name__ == "__main__":
+    s = Scraper()
+    s.scrape_website(Domain(domain="cosmoshield", tld="org"))

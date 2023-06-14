@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 from selenium import webdriver
 
 from scraper.models.domain import Domain
@@ -8,9 +9,6 @@ class Module:
     def check_if_eligible(self, url: Domain) -> bool:
         return False
 
-    def pre_save(self, browser: webdriver.Firefox):
-        pass
-
-    def parse(self, site_soup) -> dict:
+    def parse(self, domain: Domain, site_soup: BeautifulSoup, site_source, **kwargs) -> dict:
         return {}
 
