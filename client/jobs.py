@@ -28,8 +28,9 @@ async def get_or_wait_for_new_scraping_job() -> Job:
             elif r.status_code == 418:
                 error_counter = 0
             elif r.status_code == 401:
-                raise UnauthorizedException("Unauthorized. Make sure the nodeid is valid, registered and active")
+                raise UnauthorizedException("Unauthorized. Make sure the node id is valid, registered and active")
             else:
+                logging.warning(f"Error while requestiong new job: {r.text}")
                 error_counter += 1
 
             time.sleep(error_counter * error_counter + 2)

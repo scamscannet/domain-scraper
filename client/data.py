@@ -30,20 +30,30 @@ async def make_post_request_with_retires(**args):
     return False
 
 
-async def upload_website_data(jobid: str, data: ScrapingResult, assignment_id: str):
+async def upload_website_data(data: ScrapingResult, assignment_id: str):
     post_data = data.website_data.dict()
-    image_path = data.image_path
-    if image_path:
-        files = {'screenshot': open(image_path, 'rb')}
-        async with httpx.AsyncClient() as client:
-            r = await client.post(url=cfg.API + '/registry/node/upload/scrape', params={"assignment_id": assignment_id}, json=post_data, headers=headers)
-            #i = await client.post(cfg.API + '/registry/node/upload/image', files=files, headers=headers)
-    else:
-        async with httpx.AsyncClient() as client:
-            r = await client.post(cfg.API + '/registry/node/upload/scrape', params={"assignment_id": assignment_id}, json=post_data, headers=headers)
-
+    async with httpx.AsyncClient() as client:
+        r = await client.post(url=cfg.API + '/registry/node/upload/scrape', params={"assignment_id": assignment_id},
+                              json=post_data, headers=headers)
     if not r.status_code < 300:
         logging.error(f"Error while uploading scrape data: {r.text}")
+    else:
+        logging.info(f"Scrape data uploaded successfully.")
+
+        # Only upload images if scrape has been uploaded successfully
+        if data.screenshots:
+            async with httpx.AsyncClient() as client:
+                    files = {
+                        "full": ("full.png", data.screenshots.full),
+                        "visible": ("visible.png", data.screenshots.visible)
+                    }
+                    await asyncio.sleep(2)
+                    i = await client.post(cfg.API + '/registry/node/upload/image', params={"assignment_id": assignment_id}, files=data.screenshots.dict(), headers=headers)
+
+                    if not i.status_code < 300:
+                        logging.error(f"Error while uploading screenshots: {i.text}")
+
+
 
 
 async def report_website_status(job, type="issue", payload: dict = {}):

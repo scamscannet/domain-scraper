@@ -46,26 +46,14 @@ try:
                 scraping_result = ScrapingResult(
                     website_data=website_data
                 )
-                asyncio.run(upload_website_data(job.id, scraping_result, job.id))
+                asyncio.run(upload_website_data(scraping_result, job.id))
                 logging.info("Upload completed")
 
 
             else:
                 logging.info(f"Scraping completed. Uploading data.")
-                asyncio.run(upload_website_data(job.id, data, job.id))
+                asyncio.run(upload_website_data(data, job.id))
                 logging.info("Upload completed")
-
-                # Delete screenshots
-                if data.image_path:
-                    try:
-                        os.remove(data.image_path)
-                    except:
-                        pass
-                if data.full_size_image_path:
-                    try:
-                        os.remove(data.full_size_image_path)
-                    except:
-                        pass
 
         except UnreachableException as e:
             logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as unreachable.")

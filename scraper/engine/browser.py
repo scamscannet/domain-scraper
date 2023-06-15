@@ -1,6 +1,7 @@
 import logging
 import time
 import uuid
+from io import BytesIO
 
 import selenium
 from bs4 import BeautifulSoup
@@ -8,6 +9,7 @@ from selenium import webdriver
 from selenium.common import WebDriverException
 
 from config import Config
+from scraper.models.screenshots import Screenshots
 from scraper.modules.base_module import Module
 
 cfg = Config()
@@ -61,12 +63,15 @@ class Browser:
                 return None
             raise exc
         sourcecode = self._browser.page_source
-        image_id = str(uuid.uuid4())
-        image_path = f'scraper/images/{image_id}.png'
-        full_size_image_path = f'scraper/images/{image_id}_full.png'
-        self._browser.save_screenshot(image_path)
-        self._browser.save_full_page_screenshot(full_size_image_path)
-        return sourcecode, image_path, full_size_image_path, self._browser.current_url
+
+        visible_screenshot_io = self._browser.get_screenshot_as_png()
+        full_screenshot_io = self._browser.get_full_page_screenshot_as_png()
+
+        screenshots = Screenshots(
+            full=full_screenshot_io,
+            visible=visible_screenshot_io
+        )
+        return sourcecode, screenshots, self._browser.current_url
 
     def get_website_soup(self, url: str) -> BeautifulSoup:
         html, = self.get_website_sourcecode_and_screenshot(url)

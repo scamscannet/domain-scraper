@@ -16,7 +16,7 @@ class Config:
     FIREFOX_PATH = os.getenv("FIREFOX_PATH")
     NODE = Node(
         node_id=os.getenv("NODEID"),
-        ip=os.getenv("IP") if os.getenv("IP") else httpx.get('https://api.ipify.org').text
+        ip=os.getenv("IP") if os.getenv("IP") else httpx.get('https://myip.octobyte.workers.dev').text
     )
     TIMEOUT = int(os.getenv("TIMEOUT")) if os.getenv("TIMEOUT") else 25
     HEADLESS = os.getenv("HEADLESS", 'False').lower() in ('true', '1', 't', 'yes', 'y')
