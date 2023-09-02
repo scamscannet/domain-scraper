@@ -64,7 +64,7 @@ try:
             scraping_result = ScrapingResult(
                 website_data=website_data
             )
-            asyncio.run(upload_website_data(job.id, scraping_result, job.id))
+            asyncio.run(upload_website_data(scraping_result, job.id))
 
         except (ParsingError, TimeoutError, Exception) as e:
             logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as usncrapable.")
@@ -76,7 +76,7 @@ try:
             scraping_result = ScrapingResult(
                 website_data=website_data
             )
-            asyncio.run(upload_website_data(job.id, scraping_result, job.id))
+            asyncio.run(upload_website_data(scraping_result, job.id))
 
 except Exception as e:
     logging.info(f"Terminating due to {e}.")
