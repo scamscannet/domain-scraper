@@ -18,7 +18,7 @@ RUN apk add firefox-esr ca-certificates curl --no-cache \
 RUN printf 'FIREFOX_PATH="/usr/bin/firefox-esr" \n\
 HEADLESS=True \n\
 TIMEOUT=25 \n\
-API="https://registry.scamscan.net" \n\
+API="https://api.scamscan.net" \n\
 IP=""' >> .env
 
 CMD ["python", "main.py"]

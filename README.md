@@ -3,7 +3,7 @@
 ## Installtion
 * Copy the env.example to .env and edit the env variables:
 
-  * API="https://registry.scamscan.net"
+  * API="https://api.scamscan.net"
   * FIREFOX_PATH="path to firefox executable"
   * NODEID="a random generated uuidv4"
   * IP="" <- leave this blank
