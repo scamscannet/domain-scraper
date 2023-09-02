@@ -15,7 +15,7 @@ jobs:
       - name: Push to ghcr
         uses: macbre/push-to-ghcr@master
         with:
-          image_name: ${{ github.repository }}_x64  # it will be lowercased internally
+          image_name: ${{ github.repository }}  # it will be lowercased internally
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: ./Dockerfile_x64
 
