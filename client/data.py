@@ -12,8 +12,9 @@ from log import logging
 cfg = config.Config()
 
 headers = {
-    "X-NODE-ID": "123"
+    "X-NODE-ID": cfg.NODE.node_id
 }
+
 
 async def make_post_request_with_retires(**args):
     tries = 1
@@ -43,17 +44,16 @@ async def upload_website_data(data: ScrapingResult, assignment_id: str):
         # Only upload images if scrape has been uploaded successfully
         if data.screenshots:
             async with httpx.AsyncClient() as client:
-                    files = {
-                        "full": ("full.png", data.screenshots.full),
-                        "visible": ("visible.png", data.screenshots.visible)
-                    }
-                    await asyncio.sleep(2)
-                    i = await client.post(cfg.API + '/registry/node/upload/image', params={"assignment_id": assignment_id}, files=data.screenshots.dict(), headers=headers)
+                files = {
+                    "full": ("full.png", data.screenshots.full),
+                    "visible": ("visible.png", data.screenshots.visible)
+                }
+                await asyncio.sleep(2)
+                i = await client.post(cfg.API + '/registry/node/upload/image', params={"assignment_id": assignment_id},
+                                      files=data.screenshots.dict(), headers=headers)
 
-                    if not i.status_code < 300:
-                        logging.error(f"Error while uploading screenshots: {i.text}")
-
-
+                if not i.status_code < 300:
+                    logging.error(f"Error while uploading screenshots: {i.text}")
 
 
 async def report_website_status(job, type="issue", payload: dict = {}):
@@ -64,4 +64,3 @@ async def report_website_status(job, type="issue", payload: dict = {}):
         payload=payload
     )
     await make_post_request_with_retires(url=cfg.API + '/data/scraper/upload/report', json=report.dict())
-
