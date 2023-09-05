@@ -21,7 +21,7 @@ RUN bash -c case ${TARGETPLATFORM} in \
     "linux/amd64")  DOWNLOAD_ARCH="linux64"  ;; \
     "linux/arm64/v8") DOWNLOAD_ARCH="linux-aarch64"  ;; \
     && esac \
-    && curl -L https://github.com/mozilla/geckodriver/releases/download/v${version}/geckodriver-v${version}-${DOWNLOAD_ARCH}.tar.gz | tar xz -C /usr/local/bin
+    && curl -L https://github.com/mozilla/geckodriver/releases/download/v${version}/geckodriver-v${version}-${DOWNLOAD_ARCH}.tar.gz | tar xz -C /usr/local/bin \
     && chmod +x /usr/local/bin/geckodriver \
     && apk del curl 
 RUN apk del bash --no-cache 
