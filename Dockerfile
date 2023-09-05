@@ -16,7 +16,7 @@ RUN apk add ttf-dejavu ttf-liberation ttf-freefont ttf-opensans ttf-font-awesome
 RUN pip install -r requirements.txt
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.16/community" >> /etc/apk/repositories
 RUN apk add firefox-esr ca-certificates curl --no-cache  \
-    & if [ ${TARGETPLATFORM} = "linux/amd64" ]; then \
+    && if [ ${TARGETPLATFORM} = "linux/amd64" ]; then \
         DOWNLOAD_ARCH="linux64" ; \
       else \
         DOWNLOAD_ARCH="linux-aarch64" ; \
