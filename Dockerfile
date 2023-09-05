@@ -1,4 +1,5 @@
-ARG version = 0.32.0
+ARG version=0.32.0
+
 FROM --platform=${BUILDPLATFORM} python:3.11.1-alpine3.17
 ARG version
 ARG TARGETPLATFORM
