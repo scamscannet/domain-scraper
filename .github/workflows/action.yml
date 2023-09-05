@@ -2,41 +2,52 @@ on:
   push:
     branches:
       - main
+      
+env:
+    REGISTRY: ghcr.io
+    IMAGE_NAME: ${{ github.repository }} 
+
 
 jobs:
   build_x64:
     runs-on: ubuntu-latest
-    name: Builds the x64 docker image
+    name: Builds the docker image
+    
+    permissions:
+      contents: read
+      packages: write
+      
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Build the Image
-        run: docker build -t scraper_64 -f Dockerfile_x64 --build-arg SOURCE_COMMIT=$SOURCE_COMMIT .
-      - name: Push to ghcr
-        uses: macbre/push-to-ghcr@master
-        with:
-          image_name: ${{ github.repository }}  # it will be lowercased internally
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          dockerfile: ./Dockerfile_x64
 
-  build_aarch64:
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_TARGET_PLATFORM: linux/arm64/v8
-    name: Builds the arrch64 docker image
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: Set up QEMU dependency
         uses: docker/setup-qemu-action@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      - name: Build the Image
-        run: docker buildx build -t scraper_aarch64 --platform linux/arm64 -f Dockerfile_aarch64 --build-arg SOURCE_COMMIT=$SOURCE_COMMIT .
-      - name: Push to ghcr
-        uses: macbre/push-to-ghcr@master
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
         with:
-          image_name: ${{ github.repository }}_aarch64  # it will be lowercased internally
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          dockerfile: ./Dockerfile_aarch64
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+            images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm/v7,linux/arm/v8
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           
