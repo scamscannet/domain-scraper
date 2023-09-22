@@ -32,4 +32,4 @@ set your current ip in the .env file
 
 ## Run docker
 `docker login ghcr.io -u github_username -p access_token`
-`docker run -d -t --name scraper -e NODEID='your_node_id' --dns 8.8.8.8 --dns 8.8.4.4 --restart unless-stopped ghcr.io/scamscannet/domain-scraper_{aarch64 or x64}:latest`
+`docker run -d -t --name scraper -e NODEID='your_node_id' --dns 8.8.8.8 --dns 8.8.4.4 --restart unless-stopped ghcr.io/scamscannet/domain-scraper:main`
