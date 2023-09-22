@@ -13,7 +13,7 @@ cfg = config.Config()
 
 async def get_or_wait_for_new_scraping_job() -> Job:
     error_counter = 0
-    while error_counter < 10:
+    while error_counter < 100:
         try:
             async with httpx.AsyncClient() as client:
                 r = await client.get(cfg.API + '/registry/node/job', params={'node_id': cfg.NODE.node_id})
@@ -38,5 +38,5 @@ async def get_or_wait_for_new_scraping_job() -> Job:
             raise e
         except Exception as e:
             logging.warning(f"Requesting a job failed: {e}")
-            time.sleep(10)
+            time.sleep(10 if error_counter < 10 else error_counter * 2)
             error_counter += 1
