@@ -19,5 +19,8 @@ class WebsiteData(BaseModel):
     server: Optional[Server]
     node: Optional[Node]
     redirect: Optional[Domain]
+    headers: Optional[dict]
+
+    whois: Optional[dict]
 
     modules: dict = {}

@@ -8,7 +8,7 @@ from config import Config
 cfg = Config()
 
 
-async def check_for_http_or_https_and_return_url(url: str) -> (bool, str , dict):
+async def check_for_http_or_https_and_return_url(url: str) -> (bool, str, dict):
     """Checks whether a page uses a redirect. If the first value is True then the page is redirecting to the second
     string. If the bool is False then the second value represents the prefixed url """
     raw_url = url.replace("https://", "").replace("http://", "")
@@ -44,7 +44,6 @@ async def check_for_http_or_https_and_return_url(url: str) -> (bool, str , dict)
     raise Exception("Neither https nor http were accessible.")
 
 
-
 def get_ip_for_website(domain: Domain):
     ping_domain = ""
     if domain.subdomain:
@@ -56,3 +55,17 @@ def get_ip_for_website(domain: Domain):
         return ip
     except Exception:
         return ""
+
+async def get_ip_whois_and_domain_whois(ip: str, domain: str) -> (dict, dict):
+    async with httpx.AsyncClient() as client:
+        tasks = [
+            client.get(f"https://whois.scamscan.net/whois/{domain}", timeout=cfg.TIMEOUT),
+            client.get(f"https://whois.scamscan.net/ip-whois/{ip}", timeout=cfg.TIMEOUT)
+        ]
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    domain_whois = results[0].json() if results[0].status_code == 200 else {}
+    ip_whois = results[1].json() if results[1].status_code == 200 else {}
+
+    return domain_whois, ip_whois
