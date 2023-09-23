@@ -67,7 +67,14 @@ async def get_ip_whois_and_domain_whois(ip: str, domain: str) -> (dict, dict):
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    domain_whois = results[0].json() if results[0].status_code == 200 else {}
-    ip_whois = results[1].json() if results[1].status_code == 200 else {}
+    try:
+        domain_whois = results[0].json() if results[0].status_code == 200 else {}
+    except Exception:
+        domain_whois = {}
+
+    try:
+        ip_whois = results[1].json() if results[1].status_code == 200 else {}
+    except Exception:
+        ip_whois = {}
 
     return domain_whois, ip_whois
