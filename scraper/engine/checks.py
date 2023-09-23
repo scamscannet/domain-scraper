@@ -24,8 +24,10 @@ async def check_for_http_or_https_and_return_url(url: str) -> (bool, str, dict):
     url, redirect, headers = None, False, {}
     for id, protocol in enumerate(('https://', 'http://')):
         response = results[id]
-        if (isinstance(response, Exception)):
+        if isinstance(response, Exception):
             continue
+
+        headers = response.headers
 
         if 200 <= response.status_code < 400:
             url = protocol + raw_url
