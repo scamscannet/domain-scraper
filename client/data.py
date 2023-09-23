@@ -32,29 +32,45 @@ async def make_post_request_with_retires(**args):
 
 
 async def upload_website_data(data: ScrapingResult, assignment_id: str):
-    post_data = data.website_data.dict()
-    async with httpx.AsyncClient() as client:
-        r = await client.post(url=cfg.API + '/registry/node/upload/scrape', params={"assignment_id": assignment_id},
-                              json=post_data, headers=headers)
-    if not r.status_code < 300:
-        logging.error(f"Error while uploading scrape data: {r.text}")
-    else:
-        logging.info(f"Scrape data uploaded successfully.")
+    completed = False
+    counter = 0
+    while not completed and counter < 10:
+        post_data = data.website_data.dict()
+        async with httpx.AsyncClient() as client:
+            r = await client.post(url=cfg.API + '/registry/node/upload/scrape', params={"assignment_id": assignment_id},
+                                  json=post_data, headers=headers)
+        if not r.status_code < 300:
+            logging.error(f"Error while uploading scrape data: {r.text}")
+            counter += 1
+            time.sleep(6 * counter)
+            continue
+        else:
+            logging.info(f"Scrape data uploaded successfully.")
+            completed = True
+            counter = 0
 
-        # Only upload images if scrape has been uploaded successfully
-        if data.screenshots:
-            async with httpx.AsyncClient() as client:
-                files = {
-                    "full": ("full.png", data.screenshots.full),
-                    "visible": ("visible.png", data.screenshots.visible)
-                }
-                await asyncio.sleep(2)
-                i = await client.post(cfg.API + '/registry/node/upload/image', params={"assignment_id": assignment_id},
-                                      files=data.screenshots.dict(), headers=headers)
+            # Only upload images if scrape has been uploaded successfully
+            if data.screenshots and completed:
+                screenshot_completed = False
+                while not screenshot_completed and counter < 10:
+                    async with httpx.AsyncClient() as client:
+                        await asyncio.sleep(2)
+                        i = await client.post(cfg.API + '/registry/node/upload/image', params={"assignment_id": assignment_id},
+                                              files=data.screenshots.dict(), headers=headers)
 
-                if not i.status_code < 300:
-                    logging.error(f"Error while uploading screenshots: {i.text}")
+                        if not i.status_code < 300:
+                            logging.error(f"Error while uploading screenshots: {i.text}")
+                            counter += 1
+                            time.sleep(6 * counter)
+                        else:
+                            screenshot_completed = True
+                            logging.info(f"Screenshots uploaded successfully")
 
+                if not screenshot_completed:
+                    logging.warning(f"Screenshots couldn't be uploaded.")
+
+    if not completed:
+        logging.warning(f"Error while uploading screenshots. Retry limit exceeded.")
 
 async def report_website_status(job, type="issue", payload: dict = {}):
     report = ScraperReport(
