@@ -94,7 +94,7 @@ class Scraper:
 
         try:
             domain_whois, ip_whois = await get_ip_whois_and_domain_whois(
-                domain=domain.domain + "." + domain.domain,
+                domain=domain.domain + "." + domain.tld,
                 ip=server.ip
             )
         except Exception as e:
