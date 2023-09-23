@@ -35,8 +35,10 @@ async def get_or_wait_for_new_scraping_job() -> Job:
 
             time.sleep(error_counter * error_counter + 2)
         except UnauthorizedException as e:
+            logging.warning(f"Unauthorized")
             raise e
         except Exception as e:
+            print(type(e))
             logging.warning(f"Requesting a job failed: {e}")
             time.sleep(10 if error_counter < 10 else error_counter * 2)
             error_counter += 1

@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 import traceback
 
 from scraper.models.domain import url_to_domain
@@ -26,58 +27,63 @@ async def run_scrape_with_timeout(domain):
 
 try:
     while True:
-        logging.info("Waiting for a new job")
-        job = asyncio.run(get_or_wait_for_new_scraping_job())
         try:
-            # Check if URL is valid
-            logging.info(f"New Job found. Scraping {job.domain.to_url_without_protocol()}")
+            logging.info("Waiting for a new job")
+            job = asyncio.run(get_or_wait_for_new_scraping_job())
+            try:
+                # Check if URL is valid
+                logging.info(f"New Job found. Scraping {job.domain.to_url_without_protocol()}")
 
-            data = asyncio.run(run_scrape_with_timeout(job.domain))
-            if isinstance(data, ScrapingWebsiteRedirect):
-                redirect_domain = url_to_domain(data.destination)
+                data = asyncio.run(run_scrape_with_timeout(job.domain))
+                if isinstance(data, ScrapingWebsiteRedirect):
+                    redirect_domain = url_to_domain(data.destination)
 
-                logging.info(f"Detected redirect to {redirect_domain.to_url_without_protocol()}. Uploading redirect.")
+                    logging.info(f"Detected redirect to {redirect_domain.to_url_without_protocol()}. Uploading redirect.")
 
+                    website_data = WebsiteData(
+                        status="redirect",
+                        domain=job.domain,
+                        redirect=redirect_domain
+                    )
+
+                    scraping_result = ScrapingResult(
+                        website_data=website_data
+                    )
+                    asyncio.run(upload_website_data(scraping_result, job.id))
+                    logging.info("Upload completed")
+
+
+                else:
+                    logging.info(f"Scraping completed. Uploading data.")
+                    asyncio.run(upload_website_data(data, job.id))
+                    logging.info("Upload completed")
+
+            except UnreachableException as e:
+                logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as unreachable.")
                 website_data = WebsiteData(
-                    status="redirect",
-                    domain=job.domain,
-                    redirect=redirect_domain
+                    status="offline",
+                    domain=job.domain
                 )
-
                 scraping_result = ScrapingResult(
                     website_data=website_data
                 )
                 asyncio.run(upload_website_data(scraping_result, job.id))
-                logging.info("Upload completed")
 
+            except (ParsingError, TimeoutError, Exception) as e:
+                logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as usncrapable.")
 
-            else:
-                logging.info(f"Scraping completed. Uploading data.")
-                asyncio.run(upload_website_data(data, job.id))
-                logging.info("Upload completed")
-
-        except UnreachableException as e:
-            logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as unreachable.")
-            website_data = WebsiteData(
-                status="offline",
-                domain=job.domain
-            )
-            scraping_result = ScrapingResult(
-                website_data=website_data
-            )
-            asyncio.run(upload_website_data(scraping_result, job.id))
-
-        except (ParsingError, TimeoutError, Exception) as e:
-            logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as usncrapable.")
-
-            website_data = WebsiteData(
-                status="error",
-                domain=job.domain
-            )
-            scraping_result = ScrapingResult(
-                website_data=website_data
-            )
-            asyncio.run(upload_website_data(scraping_result, job.id))
+                website_data = WebsiteData(
+                    status="error",
+                    domain=job.domain
+                )
+                scraping_result = ScrapingResult(
+                    website_data=website_data
+                )
+                asyncio.run(upload_website_data(scraping_result, job.id))
+        except Exception as e:
+            logging.warning(f"An error occured: {e} = {type(e)}. Retsarting scraper with timeout")
+            time.sleep(180)
+            logging.info(f"Restarting scraper")
 
 except Exception as e:
     logging.info(f"Terminating due to {e}.")
