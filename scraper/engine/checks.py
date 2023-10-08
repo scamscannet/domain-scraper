@@ -4,6 +4,7 @@ import httpx
 
 from scraper.models.domain import Domain, url_to_domain
 from config import Config
+from log import logging
 
 cfg = Config()
 
@@ -69,12 +70,14 @@ async def get_ip_whois_and_domain_whois(ip: str, domain: str) -> (dict, dict):
 
     try:
         domain_whois = results[0].json() if results[0].status_code == 200 else {}
-    except Exception:
+    except Exception as e:
+        logging.warning(f"Error while parsing whois record: {e}")
         domain_whois = {}
 
     try:
         ip_whois = results[1].json() if results[1].status_code == 200 else {}
-    except Exception:
+    except Exception as e:
+        logging.warning(f"Error while parsing ip whois: {e}")
         ip_whois = {}
 
     return domain_whois, ip_whois
