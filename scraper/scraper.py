@@ -11,7 +11,8 @@ from selenium.common.exceptions import WebDriverException
 
 from config import Config
 from scraper.engine.browser import Browser
-from scraper.engine.checks import check_for_http_or_https_and_return_url, get_ip_for_website
+from scraper.engine.checks import check_for_http_or_https_and_return_url, get_ip_for_website, \
+    get_ip_whois_and_domain_whois
 from scraper.models.code import Code
 from scraper.models.exceptions.parsing_error import ParsingError
 from scraper.models.exceptions.unreachable import UnreachableException
@@ -118,6 +119,16 @@ class Scraper:
             ip=get_ip_for_website(domain)
         )
 
+        try:
+            domain_whois, ip_whois = await get_ip_whois_and_domain_whois(
+                domain=domain.domain + "." + domain.tld,
+                ip=server.ip
+            )
+        except Exception as e:
+            logging.warning(f"Error while requesting whois records because of {e}")
+            domain_whois, ip_whois = {}, {}
+
+        server.whois = ip_whois
         # Parse Links
         links_obj = Links(
             internal=[],
@@ -149,6 +160,8 @@ class Scraper:
             server=server,
             node=self.cfg.NODE,
             modules=module_data,
+            headers=headers,
+            whois=domain_whois,
             timestamp=datetime.datetime.now(tz=datetime.timezone.utc).isoformat(),
         )
 

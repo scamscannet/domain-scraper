@@ -19,13 +19,13 @@ def prepare_technology_file():
                 d = json.loads(f.read())
                 technologies = technologies | d
 
-    with open(os.path.join(_directory_categories, "categories.json"), "r") as f:
-        d = json.loads(f.read())
-        categories = categories | d
+    #with open(os.path.join(_directory_categories, "categories.json"), "r") as f:
+    #    d = json.loads(f.read())
+    #    categories = categories | d
 
     with open(merged_technologies_path, "w") as f:
         f.write(json.dumps({
-            'categories': categories,
+     #       'categories': categories,
             'technologies': technologies
         }))
 
