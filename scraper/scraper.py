@@ -78,13 +78,40 @@ class Scraper:
             if js_item.contents:
                 javacript.local.append(re.compile(r'\s+').sub(" ", js_item.string if js_item else ''))
 
+        # Parse textst by tags
+        whitelist = [
+            "p",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "h6",
+            "span",
+            "article",
+            "data",
+            "main",
+            "div",
+        ]
+
+        used_tags = list(set([
+            tag.name for tag in site_soup.find_all() if tag.name in whitelist
+        ]))
+
+        content = {
+            tag: [x.text for x in site_soup.find_all(tag) if x.text] for tag in used_tags
+        }
+
         code = Code(
             title=page_title if page_title else "",
             html=site_source,
-            text=re.compile(r'\s+').sub(" ", site_soup.get_text("\n")),
+            text=site_soup.get_text(strip=True),
+            categorised_text=content,
             # Remove all special characters to only have the text and single whitespaces
             javascript=javacript
         )
+
 
         # Parse Server
         server = Server(
