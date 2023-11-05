@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from scraper.models.javascript import JavaScript
+from scraper.models.scraper.javascript import JavaScript
 
 
 class Code(BaseModel):

@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
-from selenium import webdriver
 
-from scraper.models.domain import Domain
+from scraper.models.scraper.domain import Domain
 
 
 class Module:

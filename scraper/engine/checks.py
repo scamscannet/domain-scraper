@@ -2,7 +2,7 @@ import asyncio
 import socket
 import httpx
 
-from scraper.models.domain import Domain, url_to_domain
+from scraper.models.scraper.domain import Domain, url_to_domain
 from config import Config
 from log import logging
 

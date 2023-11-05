@@ -1,16 +1,10 @@
-import logging
-import time
-import uuid
-from io import BytesIO
-
 import selenium
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common import WebDriverException
 
 from config import Config
-from scraper.models.screenshots import Screenshots
-from scraper.modules.base_module import Module
+from scraper.models.scraper.screenshots import Screenshots
 
 cfg = Config()
 

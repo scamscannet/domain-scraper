@@ -1,7 +1,7 @@
 import httpx
 from pydantic import BaseModel
 
-from scraper.models.domain import Domain
+from scraper.models.scraper.domain import Domain
 from scraper.modules.base_module import Module
 
 

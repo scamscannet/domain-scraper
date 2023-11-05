@@ -1,9 +1,8 @@
 import os
-import uuid
 import time
 import httpx
 
-from scraper.models.node import Node
+from scraper.models.scraper.node import Node
 
 from dotenv import load_dotenv
 

@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
-from scraper.models.domain import Domain
-from scraper.models.website_data import WebsiteData
-from scraper.models.screenshots import Screenshots
+from scraper.models.scraper.domain import Domain
+from scraper.models.scraper.website_data import WebsiteData
+from scraper.models.scraper.screenshots import Screenshots
 
 class ScrapingResult(BaseModel):
     website_data: WebsiteData

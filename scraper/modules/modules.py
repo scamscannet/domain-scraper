@@ -1,4 +1,4 @@
-from scraper.models.domain import Domain, url_to_domain
+from scraper.models.scraper.domain import Domain, url_to_domain
 
 ALL_MODULES = []
 

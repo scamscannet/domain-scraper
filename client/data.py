@@ -1,12 +1,11 @@
 import asyncio
-import logging
 import time
 
 import httpx
 
 import config
 from client.request_models.ScraperReport import ScraperReport
-from scraper.models.scraping_result import ScrapingResult
+from scraper.models.scraper.scraping_result import ScrapingResult
 from log import logging
 
 cfg = config.Config()
@@ -71,12 +70,3 @@ async def upload_website_data(data: ScrapingResult, assignment_id: str):
 
     if not completed:
         logging.warning(f"Error while uploading screenshots. Retry limit exceeded.")
-
-async def report_website_status(job, type="issue", payload: dict = {}):
-    report = ScraperReport(
-        type=type,
-        jobid=job.id,
-        nodeid=cfg.NODE.node_id,
-        payload=payload
-    )
-    await make_post_request_with_retires(url=cfg.API + '/data/scraper/upload/report', json=report.dict())

@@ -1,4 +1,4 @@
-from scraper.models.domain import url_to_domain
+from scraper.models.scraper.domain import url_to_domain
 from scraper.modules.implementations.google import ModuleImplementation
 
 impl = ModuleImplementation()

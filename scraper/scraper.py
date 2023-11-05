@@ -1,11 +1,7 @@
-import asyncio
 import datetime
 import re
 import time
-import traceback
 
-import tldextract
-from pydantic import BaseModel
 from selenium.common import TimeoutException
 from selenium.common.exceptions import WebDriverException
 
@@ -13,15 +9,15 @@ from config import Config
 from scraper.engine.browser import Browser
 from scraper.engine.checks import check_for_http_or_https_and_return_url, get_ip_for_website, \
     get_ip_whois_and_domain_whois
-from scraper.models.code import Code
+from scraper.models.scraper.code import Code
 from scraper.models.exceptions.parsing_error import ParsingError
 from scraper.models.exceptions.unreachable import UnreachableException
-from scraper.models.javascript import JavaScript
-from scraper.models.links import Links
-from scraper.models.scraping_result import ScrapingResult, ScrapingWebsiteRedirect
-from scraper.models.server import Server
-from scraper.models.website_data import WebsiteData
-from scraper.models.domain import Domain, url_to_domain
+from scraper.models.scraper.javascript import JavaScript
+from scraper.models.scraper.links import Links
+from scraper.models.scraper.scraping_result import ScrapingResult, ScrapingWebsiteRedirect
+from scraper.models.scraper.server import Server
+from scraper.models.scraper.website_data import WebsiteData
+from scraper.models.scraper.domain import Domain
 from scraper.modules.modules import get_module_for_url
 from log import logging
 

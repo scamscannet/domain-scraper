@@ -1,16 +1,14 @@
 import asyncio
-import os
 import time
-import traceback
 
-from scraper.models.domain import url_to_domain
-from scraper.models.scraping_result import ScrapingWebsiteRedirect, ScrapingResult
-from scraper.models.website_data import WebsiteData
+from scraper.models.scraper.domain import url_to_domain
+from scraper.models.scraper.scraping_result import ScrapingWebsiteRedirect, ScrapingResult
+from scraper.models.scraper.website_data import WebsiteData
 from scraper.scraper import Scraper
 from scraper.models.exceptions.unreachable import UnreachableException
 from scraper.models.exceptions.parsing_error import ParsingError
 from client.jobs import get_or_wait_for_new_scraping_job
-from client.data import upload_website_data, report_website_status
+from client.data import upload_website_data
 
 from log import logging
 from config import Config
