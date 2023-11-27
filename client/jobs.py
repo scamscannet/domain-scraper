@@ -16,7 +16,7 @@ async def get_or_wait_for_new_scraping_job() -> Job:
     while error_counter < 100:
         try:
             async with httpx.AsyncClient() as client:
-                r = await client.get(cfg.API + '/registry/node/job', params={'node_id': cfg.NODE.node_id})
+                r = await client.get(cfg.API + '/dispatcher/job', params={'node_id': cfg.NODE.node_id})
 
             if r.status_code == 200:
                 data = r.json()
