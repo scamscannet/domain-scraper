@@ -1,89 +1,74 @@
-import asyncio
 import time
 
-from scraper.models.scraper.domain import url_to_domain
-from scraper.models.scraper.scraping_result import ScrapingWebsiteRedirect, ScrapingResult
+from scraper.models.scraper.scraping_result import ScrapingResult
 from scraper.models.scraper.website_data import WebsiteData
 from scraper.scraper import Scraper
-from scraper.models.exceptions.unreachable import UnreachableException
-from scraper.models.exceptions.parsing_error import ParsingError
+from scraper.exceptions import ScraperError
 from client.jobs import get_or_wait_for_new_scraping_job
 from client.data import upload_website_data
 
 from log import logging
-from config import Config
+from config import Config, get_config
+
+logging.info("Checking environment")
+r = Config.check_env()
+if r:
+    logging.info(f"Environment check passed. Starting scraper.")
+else:
+    logging.info(f"Environment check failed. Aborting.")
+    exit()
 
 logging.info("Starting Scraper")
-scraper = Scraper()
-cfg = Config()
-async def run_scrape_with_timeout(domain):
-    """Runs the scrape with a 30 seconds timeout. If it fails a TimeoutError is raised."""
-    r = await asyncio.wait_for(scraper.scrape_website(domain), timeout=cfg.TIMEOUT * 2)
-    return r
+try:
+    scraper = Scraper()
+except:
+    logging.info(f"Scraper failed. Aborting.")
+    exit()
 
+
+def upload_error(job):
+    """Reports the job back as status "error" so the backend doesn't keep it assigned forever."""
+    scraping_result = ScrapingResult(
+        website_data=WebsiteData(
+            status="error",
+            url=job.domain,
+            node=get_config().NODE
+        )
+    )
+    upload_website_data(scraping_result, job.id)
 
 
 try:
     while True:
         try:
             logging.info("Waiting for a new job")
-            job = asyncio.run(get_or_wait_for_new_scraping_job())
+            job = get_or_wait_for_new_scraping_job()
             try:
                 # Check if URL is valid
                 logging.info(f"New Job found. Scraping {job.domain.to_url_without_protocol()}")
+                scraping_result = scraper.scrape_website(job.domain)
 
-                data = asyncio.run(run_scrape_with_timeout(job.domain))
-                if isinstance(data, ScrapingWebsiteRedirect):
-                    redirect_domain = url_to_domain(data.destination)
+                logging.info(f"Scraping completed. Website has status: {scraping_result.website_data.status} Uploading data!")
+                upload_website_data(scraping_result, job.id)
 
-                    logging.info(f"Detected redirect to {redirect_domain.to_url_without_protocol()}. Uploading redirect.")
+                logging.info("Upload completed.")
 
-                    website_data = WebsiteData(
-                        status="redirect",
-                        domain=job.domain,
-                        redirect=redirect_domain
-                    )
+            except ScraperError as e:
+                logging.warning(f"ERROR: Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as unscrapable.")
+                upload_error(job)
+            except Exception as e:
+                logging.critical(f"Error while parsing: {e}. This likely is a internal error. Marking as unscrapable.")
+                upload_error(job)
 
-                    scraping_result = ScrapingResult(
-                        website_data=website_data
-                    )
-                    asyncio.run(upload_website_data(scraping_result, job.id))
-                    logging.info("Upload completed")
-
-
-                else:
-                    logging.info(f"Scraping completed. Uploading data.")
-                    asyncio.run(upload_website_data(data, job.id))
-                    logging.info("Upload completed")
-
-            except UnreachableException as e:
-                logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as unreachable.")
-                website_data = WebsiteData(
-                    status="offline",
-                    domain=job.domain
-                )
-                scraping_result = ScrapingResult(
-                    website_data=website_data
-                )
-                asyncio.run(upload_website_data(scraping_result, job.id))
-
-            except (ParsingError, TimeoutError, Exception) as e:
-                logging.warning(f"Couldn't scrape {job.domain.domain}.{job.domain.tld} due to {e}. Marking as usncrapable.")
-
-                website_data = WebsiteData(
-                    status="error",
-                    domain=job.domain
-                )
-                scraping_result = ScrapingResult(
-                    website_data=website_data
-                )
-                asyncio.run(upload_website_data(scraping_result, job.id))
+            if get_config().DEVELOPMENT:
+                break
         except Exception as e:
-            logging.warning(f"An error occured: {e} = {type(e)}. Retsarting scraper with timeout")
+            logging.warning(f"An error occured: {e} = {type(e)}. Restarting scraper with timeout")
             time.sleep(180)
             logging.info(f"Restarting scraper")
 
 except Exception as e:
     logging.info(f"Terminating due to {e}.")
 
+finally:
     scraper.terminate()

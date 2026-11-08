@@ -33,3 +33,13 @@ set your current ip in the .env file
 ## Run docker
 `docker login ghcr.io -u github_username -p access_token`
 `docker run -d -t --name scraper -e NODEID='your_node_id' --dns 8.8.8.8 --dns 8.8.4.4 --restart unless-stopped ghcr.io/scamscannet/domain-scraper:main`
+
+## Development
+A static mock of the API (`tests/mock_api.py`) always hands out an example.com job and accepts the uploads.
+* `pip install -r requirements-dev.txt`
+* `litestar --app tests.mock_api:app run --reload --port 8000`
+* set `API="http://127.0.0.1:8000"` in your .env and start the scraper
+* `pytest tests/test_scrape_example.py` runs a full job against the mock API (it starts the mock itself)
+
+## Todo
+* move to enthec/webappanalyzer

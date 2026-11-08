@@ -1,22 +1,19 @@
-import logging
 import time
 
 import httpx
 
-import config
+from config import get_config
 from client.exceptions import UnauthorizedException
 from models.Job import Job
 from log import logging
 
-cfg = config.Config()
 
-
-async def get_or_wait_for_new_scraping_job() -> Job:
+def get_or_wait_for_new_scraping_job() -> Job:
     error_counter = 0
     while error_counter < 100:
         try:
-            async with httpx.AsyncClient() as client:
-                r = await client.get(cfg.API + '/dispatcher/job', params={'node_id': cfg.NODE.node_id})
+            with httpx.Client() as client:
+                r = client.get(get_config().API + '/dispatcher/job', params={'node_id': get_config().NODE.node_id})
 
             if r.status_code == 200:
                 data = r.json()
@@ -38,7 +35,6 @@ async def get_or_wait_for_new_scraping_job() -> Job:
             logging.warning(f"Unauthorized")
             raise e
         except Exception as e:
-            print(type(e))
             logging.warning(f"Requesting a job failed: {e}")
             time.sleep(10 if error_counter < 10 else error_counter * 2)
             error_counter += 1

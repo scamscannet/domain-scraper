@@ -1,27 +1,24 @@
-import asyncio
 import socket
 import httpx
 
-from scraper.models.scraper.domain import Domain, url_to_domain
-from config import Config
+from scraper.models.scraper.url import Url, parse_url
+from config import get_config
 from log import logging
 
-cfg = Config()
 
-
-async def check_for_http_or_https_and_return_url(url: str) -> (bool, str, dict):
+def check_for_http_or_https_and_return_url(url: str) -> (bool, str, dict):
     """Checks whether a page uses a redirect. If the first value is True then the page is redirecting to the second
     string. If the bool is False then the second value represents the prefixed url """
     raw_url = url.replace("https://", "").replace("http://", "")
-    orig_domain_obj = url_to_domain(raw_url)
+    orig_domain_obj = parse_url(raw_url)
 
-    async with httpx.AsyncClient() as client:
-        tasks = [
-            client.get("https://" + raw_url, timeout=cfg.TIMEOUT),
-            client.get("http://" + raw_url, timeout=cfg.TIMEOUT)
-        ]
-
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+    results = []
+    with httpx.Client() as client:
+        for protocol in ('https://', 'http://'):
+            try:
+                results.append(client.get(protocol + raw_url, timeout=get_config().TIMEOUT))
+            except Exception as e:
+                results.append(e)
     url, redirect, headers = None, False, {}
     for id, protocol in enumerate(('https://', 'http://')):
         response = results[id]
@@ -35,7 +32,7 @@ async def check_for_http_or_https_and_return_url(url: str) -> (bool, str, dict):
         if response.status_code > 300:
             new_url = response.headers['Location']
             if new_url:
-                new_domain_obj = url_to_domain(new_url)
+                new_domain_obj = parse_url(new_url)
                 if new_domain_obj.domain == orig_domain_obj.domain and new_domain_obj.subdomain == orig_domain_obj.subdomain and orig_domain_obj.tld == new_domain_obj.tld:
                     # raise Exception("Redirecting to same Page. That won't work yet.")
                     pass
@@ -47,7 +44,7 @@ async def check_for_http_or_https_and_return_url(url: str) -> (bool, str, dict):
     raise Exception("Neither https nor http were accessible.")
 
 
-def get_ip_for_website(domain: Domain):
+def get_ip_for_website(domain: Url):
     ping_domain = ""
     if domain.subdomain:
         ping_domain = domain.subdomain + "."
@@ -59,14 +56,14 @@ def get_ip_for_website(domain: Domain):
     except Exception:
         return ""
 
-async def get_ip_whois_and_domain_whois(ip: str, domain: str) -> (dict, dict):
-    async with httpx.AsyncClient() as client:
-        tasks = [
-            client.get(f"https://whois.scamscan.net/whois/{domain}", timeout=cfg.TIMEOUT),
-            client.get(f"https://whois.scamscan.net/ip-whois/{ip}", timeout=cfg.TIMEOUT)
-        ]
-
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+def get_ip_whois_and_domain_whois(ip: str, domain: str) -> (dict, dict):
+    results = []
+    with httpx.Client() as client:
+        for whois_url in (f"https://whois.scamscan.net/whois/{domain}", f"https://whois.scamscan.net/ip-whois/{ip}"):
+            try:
+                results.append(client.get(whois_url, timeout=get_config().TIMEOUT))
+            except Exception as e:
+                results.append(e)
 
     try:
         domain_whois = results[0].json() if results[0].status_code == 200 else {}

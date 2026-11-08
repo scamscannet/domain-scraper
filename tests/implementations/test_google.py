@@ -1,4 +1,4 @@
-from scraper.models.scraper.domain import url_to_domain
+from scraper.models.scraper.url import parse_url
 from scraper.modules.implementations.google import ModuleImplementation
 
 impl = ModuleImplementation()
@@ -19,5 +19,5 @@ def test_tld_loading():
 
 def test_implementation_eligibty():
     for url, result in urls_to_test.items():
-        furl = url_to_domain(url)
+        furl = parse_url(url)
         assert result == impl.check_if_eligible(furl)

@@ -1,7 +1,7 @@
 import httpx
 from pydantic import BaseModel
 
-from scraper.models.scraper.domain import Domain
+from scraper.models.scraper.url import Url
 from scraper.modules.base_module import Module
 
 
@@ -25,7 +25,7 @@ class ModuleImplementation(Module):
             except Exception:
                 pass
 
-    def check_if_eligible(self, url: Domain):
+    def check_if_eligible(self, url: Url):
         return url.domain == "google" and url.tld in self._tlds and "search" in url.path and "q" in url.query.keys()
 
     @property

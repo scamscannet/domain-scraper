@@ -1,15 +1,18 @@
-from scraper.models.scraper.domain import Domain, url_to_domain
+from scraper.models.scraper.url import Url, parse_url
 
 ALL_MODULES = []
 
-from scraper.modules.implementations import google
+from scraper.modules.implementations import google, javascript, metadata, text
 
 ALL_MODULES.append(google.ModuleImplementation())
+ALL_MODULES.append(javascript.ModuleImplementation())
+ALL_MODULES.append(text.ModuleImplementation())
+ALL_MODULES.append(metadata.ModuleImplementation())
 
 
-def get_module_for_url(url: str | Domain):
+def get_module_for_url(url: str | Url):
     if isinstance(url, str):
-        d = url_to_domain(url)
+        d = parse_url(url)
     else:
         d = url
 
