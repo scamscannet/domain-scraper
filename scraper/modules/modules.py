@@ -2,12 +2,15 @@ from scraper.models.scraper.url import Url, parse_url
 
 ALL_MODULES = []
 
-from scraper.modules.implementations import google, javascript, metadata, text
+from scraper.modules.implementations import google, javascript, metadata, text, whois, dns_records, domains
 
 ALL_MODULES.append(google.ModuleImplementation())
 ALL_MODULES.append(javascript.ModuleImplementation())
 ALL_MODULES.append(text.ModuleImplementation())
 ALL_MODULES.append(metadata.ModuleImplementation())
+ALL_MODULES.append(whois.ModuleImplementation())
+ALL_MODULES.append(dns_records.ModuleImplementation())
+ALL_MODULES.append(domains.ModuleImplementation())
 
 
 def get_module_for_url(url: str | Url):
